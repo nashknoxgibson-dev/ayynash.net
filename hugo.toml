@@ -13,8 +13,8 @@ title = 'Nash Gibson'
 
 [params.author]
   name = 'Nash Gibson'
-  intro = 'HALLO'
-  description = ':D Welcome to my site! all my socials and useful links live here.'
+  intro = 'HALLO :D'
+  description = 'Welcome to my site! all my socials and useful links live here.'
 
 [outputs]
   home = ['HTML']
