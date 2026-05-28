@@ -1,0 +1,23 @@
+baseURL = 'http://localhost:1313/'
+languageCode = 'en-us'
+title = 'Nash Gibson'
+
+[module]
+  [[module.imports]]
+    path = "github.com/hugo-sid/hugo-blog-awesome"
+
+[params]
+  sitename = 'Nash Gibson'
+  defaultColor = 'dark'
+  description = ':p'
+
+[params.author]
+  name = 'Nash Gibson'
+  intro = 'HALLO'
+  description = ':D Welcome to my site! all my socials and useful links live here.'
+
+[outputs]
+  home = ['HTML']
+  section = ['HTML']
+  taxonomy = ['HTML']
+  term = ['HTML']
