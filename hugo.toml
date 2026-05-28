@@ -21,3 +21,23 @@ title = 'Nash Gibson'
   section = ['HTML']
   taxonomy = ['HTML']
   term = ['HTML']
+
+  [[params.socialIcons]]
+  name = "github"
+  url = "https://github.com/nashknoxgibson-dev"
+
+[[params.socialIcons]]
+  name = "instagram"
+  url = "https://instagram.com/ayenash"
+
+[[params.socialIcons]]
+  name = "x"
+  url = "https://x.com/notaynash"
+
+[[params.socialIcons]]
+  name = "youtube"
+  url = "https://www.youtube.com/@AyyNash727"
+
+[[params.socialIcons]]
+  name = "discord"
+  url = "https://discord.gg/ayynash"
