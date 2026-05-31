@@ -11,7 +11,7 @@ export async function onRequestPost(context) {
     status: 302,
     headers: {
       "Location": "/members/",
-      "Set-Cookie": `__Host-members_session=${env.MEMBERS_COOKIE}; HttpOnly; Secure; SameSite=Strict; Path=/`
+      "Set-Cookie": `__Host-members_session=${env.MEMBERS_COOKIE}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900`
     }
   });
 }
