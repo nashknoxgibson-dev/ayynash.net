@@ -1,8 +1,12 @@
 <div class="navbar" role="navigation">
     <nav class="menu" aria-label="Main Navigation">
-        <a href="{{ .Site.Home.Permalink }}" class="logo">
-            {{ partial "svgs/home.svg" (dict "height" 25 "width" 25) . }}
-        </a>
+<a href="{{ .Site.Home.Permalink }}" class="logo">
+    {{ with .Site.Params.logo }}
+        <img src="{{ .path }}" alt="{{ .alt }}" height="40" style="width:auto;" />
+    {{ else }}
+        {{ partial "svgs/home.svg" (dict "height" 25 "width" 25) . }}
+    {{ end }}
+</a>
         <input type="checkbox" id="menu-trigger" class="menu-trigger" />
         <label for="menu-trigger">
             <span class="menu-icon">

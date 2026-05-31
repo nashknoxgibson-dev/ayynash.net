@@ -10,6 +10,6 @@ title = 'EVERYTHING WORKS'
 
 Hello, welcome to my new website! I'm still learning how all this stuff works, so please be patient with me.
 
-I have everything working now. Plex and Overseerr (now known as Seer) should be automatically configured if you were on my last server. If not, please let me know via email or message and I'll add you to the list.
+I have everything working now. Plex and Overseer (now known as Seer) should be automatically configured if you were on my last server. If not, please let me know via email or message, and I'll add you to the list.
 
 Please go to the link above for the new Seer link and other relevant server links. Let me know if you need any help. Login details for that page will be sent to you directly. :P

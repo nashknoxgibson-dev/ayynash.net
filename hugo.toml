@@ -16,13 +16,11 @@ title = 'Nash Gibson'
   intro = 'HALLO :D'
   description = 'Welcome to my site! all my socials and useful links live here.'
 
-[outputs]
-  home = ['HTML']
-  section = ['HTML']
-  taxonomy = ['HTML']
-  term = ['HTML']
+[params.logo]
+  path = "/images/logo.png"
+  alt = "Nash Gibson logo"
 
-  [[params.socialIcons]]
+[[params.socialIcons]]
   name = "github"
   url = "https://github.com/nashknoxgibson-dev"
 
@@ -41,7 +39,14 @@ title = 'Nash Gibson'
 [[params.socialIcons]]
   name = "discord"
   url = "https://discord.gg/ayynash"
- 
-[[params.logo]]
-  path = "/images/logo.png"
-  alt = "Nash Gibson logo"
+
+[outputs]
+  home = ['HTML']
+  section = ['HTML']
+  taxonomy = ['HTML']
+  term = ['HTML']
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
