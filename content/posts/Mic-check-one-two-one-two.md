@@ -4,4 +4,4 @@ draft = true
 title = 'Mic Check One Two One Two'
 +++
 
-This is a test post, I currently don't have my server up and running. Hopefully I'll Have it up by tomorrow evening. Sorry for the delay. :p
+This is a test post, I currently don't have my server up and running. Hopefully I'll Have it up by tomorrow evening. Sorry for the delay. :p.
