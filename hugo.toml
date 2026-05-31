@@ -41,3 +41,7 @@ title = 'Nash Gibson'
 [[params.socialIcons]]
   name = "discord"
   url = "https://discord.gg/ayynash"
+ 
+[[params.logo]]
+  path = "/images/logo.png"
+  alt = "Nash Gibson logo"

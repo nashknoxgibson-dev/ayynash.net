@@ -1,36 +1,10 @@
 export async function onRequest(context) {
-  const { request, env, next } = context;
-  const url = new URL(request.url);
+  const { request, env } = context;
+  const cookie = request.headers.get("Cookie") || "";
 
-  if (!url.pathname.startsWith("/members")) {
-    return next();
+  if (!cookie.includes(`__Host-members_session=${env.MEMBERS_COOKIE}`)) {
+    return Response.redirect(new URL("/members-login/", request.url), 302);
   }
 
-  const auth = request.headers.get("Authorization");
-  if (!auth) {
-    return new Response("Authentication required", {
-      status: 401,
-      headers: { "WWW-Authenticate": 'Basic realm="Members Area"' }
-    });
-  }
-
-  const [scheme, encoded] = auth.split(" ");
-  if (scheme !== "Basic" || !encoded) {
-    return new Response("Invalid authentication", {
-      status: 401,
-      headers: { "WWW-Authenticate": 'Basic realm="Members Area"' }
-    });
-  }
-
-  const decoded = atob(encoded);
-  const [username, password] = decoded.split(":");
-
-  if (username !== env.MEMBERS_USER || password !== env.MEMBERS_PASS) {
-    return new Response("Invalid credentials", {
-      status: 401,
-      headers: { "WWW-Authenticate": 'Basic realm="Members Area"' }
-    });
-  }
-
-  return next();
+  return context.next();
 }
