@@ -8,7 +8,5 @@ draft: false
 
 Welcome to the private members page.
 
-- [Seer](https://your-seer-link-here)
-- [Overseerr](https://your-overseerr-link-here)
-- [Discord](https://your-discord-link-here)
-- [Status Page](https://your-status-link-here)
+- [Seer](http://95.168.173.106:5055/login)
+- [Plex](https://watch.plex.tv/)
