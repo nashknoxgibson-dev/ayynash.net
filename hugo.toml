@@ -50,3 +50,9 @@ title = 'Nash Gibson'
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
+
+[[menu.main]]
+  identifier = "members"
+  name = "Members"
+  url = "/members/"
+  weight = 20
