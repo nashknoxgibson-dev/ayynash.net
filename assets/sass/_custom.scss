@@ -47,6 +47,19 @@ html.dark { @include custom-dark; }
   max-width: calc(940px - (#{$spacing-full} * 2));
 }
 
+// Visually hidden but still read by screen readers.
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 // !important guards against the theme's .page-content h2 rules.
 h2.section-label,
 .section-label {
@@ -462,6 +475,70 @@ h2.section-heading {
   }
 
   .btn-row { justify-content: center; }
+
+  // Code entry: input + button, side by side, stacking on narrow screens.
+  .invite-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 1.7rem auto 0;
+    max-width: 30rem;
+
+    input[type="text"] {
+      flex: 1 1 15rem;
+      min-width: 0;
+      padding: 15px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--ink);
+      font-family: $mono-family;
+      font-size: 1.06rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-align: center;
+      text-transform: uppercase;
+
+      &::placeholder {
+        color: var(--ink-muted);
+        opacity: 0.55;
+        letter-spacing: 0.1em;
+        font-weight: 400;
+      }
+
+      &:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-color: var(--accent);
+      }
+
+      &[aria-invalid="true"] {
+        border-color: #e5534b;
+        outline-color: #e5534b;
+      }
+    }
+
+    .btn { flex: 0 0 auto; }
+
+    @include media-query($on-mobile) {
+      .btn { width: 100%; justify-content: center; }
+    }
+  }
+
+  .invite-error {
+    margin: 0.85rem auto 0;
+    max-width: 30rem;
+    color: #e5534b;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  code {
+    font-family: $mono-family;
+    font-size: 0.9em;
+    word-break: break-all;
+  }
 
   .invite-note {
     display: block;

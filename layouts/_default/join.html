@@ -13,19 +13,96 @@
 
   <main aria-label="Content">
 
-    {{/* ---------- The invite CTA, up top where it belongs ---------- */}}
+    {{/* ---------- The invite CTA ----------
+         Wizarr has no "enter your code" screen — its only public route is
+         /j/<CODE>. So we collect the code here and send them straight there. */}}
     <section class="invite-box">
-      <h2>Ready? Redeem your code</h2>
-      <p>This opens the invite page, where you'll enter the code I sent you and link your Plex account.</p>
-      <div class="btn-row">
-        <a class="btn btn-primary btn-lg" href="{{ $svc.wizarr }}" target="_blank" rel="noopener">
-          Enter invite code &rarr;
-        </a>
-      </div>
+      <h2>Ready? Enter your invite code</h2>
+      <p>Type the code I sent you. You can paste the whole link too &mdash; we'll pull the code out of it.</p>
+
+      <form class="invite-form" id="invite-form" novalidate>
+        <label class="sr-only" for="invite-code">Invite code</label>
+        <input
+          id="invite-code"
+          name="code"
+          type="text"
+          inputmode="latin"
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          maxlength="120"
+          placeholder="ABC123XYZ"
+          aria-describedby="invite-error" />
+        <button class="btn btn-primary btn-lg" type="submit">Continue &rarr;</button>
+      </form>
+
+      <p class="invite-error" id="invite-error" role="alert" hidden></p>
+
+      <noscript>
+        <p class="invite-note" style="margin-top:1rem">
+          This box needs JavaScript. Without it, open the invite link I sent you directly &mdash;
+          it looks like <code>{{ $svc.wizarr }}j/YOURCODE</code>.
+        </p>
+      </noscript>
+
       <span class="invite-note">
         Don't have a code yet? <a href="{{ $svc.contact }}" target="_blank" rel="noopener">Message me</a> and I'll send one.
       </span>
     </section>
+
+    <script>
+      (function () {
+        {{/* Hugo emits this as a quoted, JS-escaped string literal on its own —
+             piping through jsonify would double-encode the quotes. */}}
+        var BASE = {{ $svc.wizarr }};
+        var form = document.getElementById("invite-form");
+        var input = document.getElementById("invite-code");
+        var error = document.getElementById("invite-error");
+        if (!form || !input || !error) return;
+
+        // Wizarr codes are 6-10 chars of A-Z and 0-9 (see app/services/invites.py).
+        var VALID = /^[A-Z0-9]{6,10}$/;
+
+        function clean(raw) {
+          var v = (raw || "").trim();
+          // Tolerate a pasted full invite link: grab whatever follows /j/.
+          var m = v.match(/\/j\/([^/?#\s]+)/i);
+          if (m) v = m[1];
+          // Tolerate stray spaces, dashes or underscores people add.
+          return v.replace(/[\s\-_]/g, "").toUpperCase();
+        }
+
+        function fail(msg) {
+          error.textContent = msg;
+          error.hidden = false;
+          input.setAttribute("aria-invalid", "true");
+          input.focus();
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var code = clean(input.value);
+
+          if (!code) return fail("Enter the invite code I sent you.");
+          if (!VALID.test(code)) {
+            return fail(
+              "That doesn't look like a valid code. It should be 6-10 letters and numbers."
+            );
+          }
+
+          error.hidden = true;
+          input.removeAttribute("aria-invalid");
+          input.value = code;
+          window.location.href = BASE.replace(/\/+$/, "") + "/j/" + encodeURIComponent(code);
+        });
+
+        // Clear the error as soon as they start fixing it.
+        input.addEventListener("input", function () {
+          error.hidden = true;
+          input.removeAttribute("aria-invalid");
+        });
+      })();
+    </script>
 
     {{/* ---------- What is Plex ---------- */}}
     {{ with $p.whatIsPlex }}

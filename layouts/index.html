@@ -26,14 +26,14 @@
             <h1 class="hero-title">{{ .Site.Params.author.intro }}</h1>
             <p class="hero-sub">{{ .Site.Params.author.description }}</p>
 
-            {{ with $.Site.GetPage "/posts" }}
-            {{ $latest := index (first 1 (where $.Site.RegularPages "Type" "in" $.Site.Params.mainSections).ByDate.Reverse) 0 }}
-            {{ with $latest }}
+            {{/* Newest published post, if there is one. `range first 1` is used
+                 instead of `index ... 0` because it is a no-op on an empty list
+                 rather than an out-of-range build error. */}}
+            {{ range first 1 (where .Site.RegularPages "Type" "in" .Site.Params.mainSections).ByDate.Reverse }}
             <a class="status-chip" href="{{ .RelPermalink }}">
                 <span class="dot" aria-hidden="true"></span>
                 Latest update: {{ .Title }}
             </a>
-            {{ end }}
             {{ end }}
         </section>
 

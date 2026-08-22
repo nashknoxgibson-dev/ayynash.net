@@ -23,12 +23,12 @@ You install Plex, sign in, and my library shows up alongside anything else you h
   body = "Invite codes are handed out one at a time — over text, Discord, or email. If you don't have one yet, message me and I'll send one over."
 
 [[steps]]
-  title = 'Enter the code on the invite page'
-  body = 'Hit the button below. It opens Wizarr, which is the tool that handles invites for my server. Type in the code you were given.'
+  title = 'Type it into the box above'
+  body = "Enter the code and hit Continue. If I sent you a full link instead of a code, you can paste the whole thing in — it'll sort itself out."
 
 [[steps]]
   title = 'Create your Plex account (or sign in)'
-  body = "Wizarr walks you through it. If you've ever used Plex before, just sign in with that account — you don't need a new one."
+  body = "The invite page walks you through it. If you've ever used Plex before, just sign in with that account — you don't need a new one."
 
 [[steps]]
   title = "That's it — the library shows up"
