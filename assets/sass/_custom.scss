@@ -5,34 +5,35 @@
 // ===========================================================================
 
 // ---- Theme tokens ---------------------------------------------------------
-// Light is the base; dark re-declares the same names. Both are always defined,
-// so nothing depends on a media query alone.
+// Black/green terminal palette. Light and dark are intentionally identical —
+// this site no longer has a light mode — so nothing flashes the old gold
+// theme before JS (or a media query) picks a mode.
 :root {
-  --accent: #96620a;          // Plex gold, darkened so white text on it passes AA
-  --accent-strong: #774d06;
-  --accent-contrast: #ffffff; // text that sits on the accent
-  --surface: #ffffff;
-  --surface-raised: #f6f7f9;
-  --border: #e0e3e8;
-  --border-strong: #c9cdd4;
-  --ink: #1b1e21;
-  --ink-muted: #5c636d;
-  --shadow: 0 1px 2px rgba(16, 20, 28, 0.06), 0 8px 24px rgba(16, 20, 28, 0.06);
-  --shadow-lift: 0 2px 4px rgba(16, 20, 28, 0.08), 0 14px 34px rgba(16, 20, 28, 0.12);
+  --accent: #33ff33;          // phosphor terminal green
+  --accent-strong: #66ff66;   // brighter green for hover/focus states
+  --accent-contrast: #000000; // text that sits on the accent (reverse video)
+  --surface: #000000;         // OLED black
+  --surface-raised: #050805;  // barely-there green-black, just enough to read as a card
+  --border: #123312;
+  --border-strong: #1f5c1f;
+  --ink: #33ff33;
+  --ink-muted: #1f8f1f;
+  --shadow: 0 0 0 1px rgba(51, 255, 51, 0.06), 0 8px 24px rgba(51, 255, 51, 0.05);
+  --shadow-lift: 0 0 0 1px rgba(51, 255, 51, 0.12), 0 0 28px rgba(51, 255, 51, 0.12);
 }
 
 @mixin custom-dark {
-  --accent: #e5a00d;          // Plex gold proper
-  --accent-strong: #f2b62e;
-  --accent-contrast: #17120a;
-  --surface: #131418;
-  --surface-raised: #1b1d25;
-  --border: #282b34;
-  --border-strong: #3a3e49;
-  --ink: #eaeaea;
-  --ink-muted: #9aa1ad;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.32);
-  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.5), 0 16px 40px rgba(0, 0, 0, 0.45);
+  --accent: #33ff33;
+  --accent-strong: #66ff66;
+  --accent-contrast: #000000;
+  --surface: #000000;
+  --surface-raised: #050805;
+  --border: #123312;
+  --border-strong: #1f5c1f;
+  --ink: #33ff33;
+  --ink-muted: #1f8f1f;
+  --shadow: 0 0 0 1px rgba(51, 255, 51, 0.06), 0 8px 24px rgba(51, 255, 51, 0.05);
+  --shadow-lift: 0 0 0 1px rgba(51, 255, 51, 0.12), 0 0 28px rgba(51, 255, 51, 0.12);
 }
 
 html.dark { @include custom-dark; }
@@ -124,8 +125,8 @@ h2.section-heading {
       width: 48px;
       height: 48px;
       border-radius: 12px;
-      background: rgba(229, 160, 13, 0.15);
-      border: 1px solid rgba(229, 160, 13, 0.35);
+      background: rgba(51, 255, 51, 0.15);
+      border: 1px solid rgba(51, 255, 51, 0.35);
 
       .tile-icon { margin: 0; width: 23px; height: 23px; }
     }
@@ -235,7 +236,7 @@ h2.section-heading {
   &.tile-primary {
     border-color: var(--accent);
     background:
-      linear-gradient(180deg, rgba(229, 160, 13, 0.09), rgba(229, 160, 13, 0.02)),
+      linear-gradient(180deg, rgba(51, 255, 51, 0.09), rgba(51, 255, 51, 0.02)),
       var(--surface-raised);
 
     .tile-title { color: var(--accent); }
@@ -403,8 +404,8 @@ h2.section-heading {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #3fb950;
-    box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.18);
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(51, 255, 51, 0.22);
   }
 
   .chip-title {
@@ -442,7 +443,7 @@ h2.section-heading {
     padding: 5px 12px;
     margin-bottom: 1rem;
     border-radius: 999px;
-    background: rgba(229, 160, 13, 0.14);
+    background: rgba(51, 255, 51, 0.14);
     color: var(--accent);
     font-size: 0.72rem;
     font-weight: 800;
@@ -538,7 +539,7 @@ h2.section-heading {
   border: 1px solid var(--accent);
   border-radius: 16px;
   background:
-    linear-gradient(180deg, rgba(229, 160, 13, 0.1), rgba(229, 160, 13, 0.02)),
+    linear-gradient(180deg, rgba(51, 255, 51, 0.1), rgba(51, 255, 51, 0.02)),
     var(--surface-raised);
   text-align: center;
 
@@ -709,4 +710,44 @@ h2.section-heading {
     font-size: 0.9rem;
     font-weight: 600;
   }
+}
+
+// ---- Terminal touches the theme's own variables can't reach ---------------
+// A few colors in the vendored theme are hardcoded literals rather than the
+// $black/$white/etc. Sass variables, so they survive even after main.scss
+// repoints the whole palette. Catch them here, since this file loads last.
+
+// Text-selection highlight: reverse video instead of the default pale yellow.
+mark,
+::selection {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+// Code blocks: pure black instead of the theme's dark slate, with a faint
+// green border so blocks still read as distinct from the page background.
+pre {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border);
+
+  > code {
+    color: var(--ink) !important;
+  }
+}
+
+// Footer social icons: same hardcoded gray the theme uses everywhere else,
+// swapped for the terminal green so they match the hero row above.
+.footer_social-icons svg {
+  color: var(--ink-muted) !important;
+
+  &:hover {
+    color: var(--accent) !important;
+  }
+}
+
+// Keyboard-focus ring on links: the theme hardcodes a blue outline here
+// (unrelated to $variables), which would be the one leftover blue thing
+// on an otherwise all-green site.
+a:focus {
+  outline-color: rgba(51, 255, 51, 0.6) !important;
 }

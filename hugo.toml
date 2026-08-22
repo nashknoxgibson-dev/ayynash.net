@@ -12,6 +12,10 @@ title = 'Nash Gibson'
   description = 'Plex server, media requests, and server status updates.'
   mainSections = ['posts']
 
+[params.webmanifest]
+  theme_color = '#000000'
+  background_color = '#000000'
+
 # ---------------------------------------------------------------------------
 # Service URLs — change these in ONE place and every button on the site updates.
 # ---------------------------------------------------------------------------

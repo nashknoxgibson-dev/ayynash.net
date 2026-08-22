@@ -1,0 +1,99 @@
+//////////////// 1. Light Colors /////////////////
+// This site is styled as a permanent black/green terminal, so the "light"
+// palette below is intentionally identical to the "dark" one further down —
+// there's no light mode to fall back to, on purpose.
+$text-base-color: #2bcf2b;
+$text-link-blue: #33ff33;
+$text-link-blue-active: #b3ffb3;
+$bloquote-border: #1a4d1a;
+$blockquote-text: #1f8f1f;
+$inline-code-text: #33ff33;
+$inline-code-bg: #001a00;
+$toc-bg: #001400;
+$go-top-bg: #123312;
+$go-top-bg-hover: #1a4d1a;
+
+// NOTE: in this theme $black is the LIGHT-mode *text* color and $white is
+// the LIGHT-mode *background* color (the names describe the classic light
+// theme they replaced, not literal black/white) — so these two are
+// deliberately inverted from what their names suggest.
+$black: #33ff33;
+$light: #123312;
+$smoke: #1a4d1a;
+$gray: #1f8f1f;
+$white: #000000;
+
+//////////////// 2. Dark Colors /////////////////
+$dark-text-base-color: #2bcf2b;
+$dark-text-link-blue: #33ff33;
+$dark-text-link-blue-active: #b3ffb3;
+$dark-bloquote-border: #1a4d1a;
+$dark-blockquote-text: #1f8f1f;
+$dark-inline-code-text: #33ff33;
+$dark-inline-code-bg: #001a00;
+$dark-toc-bg: #001400;
+$dark-go-top-bg: #123312;
+$dark-go-top-bg-hover: #1a4d1a;
+
+$dark-black: #000000;
+$dark-white: #33ff33;
+$dark-light: #123312;
+$dark-smoke: #1a4d1a;
+$dark-gray: #1f8f1f;
+
+//////////////// 3. Fonts preferences /////////////////
+$sans-family: 'JetBrains Mono', 'Consolas', monospace;
+$mono-family: 'JetBrains Mono', 'Consolas', monospace;
+$base-font-size: 16px;
+$medium-font-size: $base-font-size * 0.938;
+$small-font-size: $base-font-size * 0.875;
+$base-line-height: 1.85;
+
+// Font weight
+// $light-weight: 300; // uncomment if necessary
+$normal-weight: 400;
+$bold-weight: 700;
+// $black-weight: 900; // uncomment if necessary
+
+//////////////// 4.Responsive design (media queries) /////////////////
+$wide-size: 890px;
+$narrow-size: 720px;
+
+// Padding unit
+$spacing-full: 30px;
+$spacing-half: $spacing-full / 2;
+
+// Screen sizes
+$on-mobile: 768px;
+$on-tablet: 769px;
+$on-desktop: 1024px;
+$on-widescreen: 1152px;
+
+@mixin media-query($device) {
+    @media screen and (max-width: $device) {
+        @content;
+    }
+}
+
+@mixin relative-font-size($ratio) {
+    font-size: $base-font-size * $ratio;
+}
+
+//////////////// 5. Import all sass files /////////////////
+
+@import "fonts";
+@import "base";
+@import "navbar";
+@import "layout";
+@import "post";
+@import "code";
+
+@import "tableOfContent";
+@import "miscellaneous";
+@import "dark";
+@import "listpage";
+@import "custom";
+
+{{ with .Site.Params.goToTop }}
+@import "goToTop";
+{{ end }}
