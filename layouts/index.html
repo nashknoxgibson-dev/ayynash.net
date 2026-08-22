@@ -24,7 +24,18 @@
             <img class="hero-avatar" src="{{ . }}" alt="{{ $.Site.Params.logo.alt }}" width="84" height="84" />
             {{ end }}
             <h1 class="hero-title">{{ .Site.Params.author.intro }}</h1>
+            {{ with .Site.Params.author.tagline }}
+            <p class="hero-tagline">{{ . }}</p>
+            {{ end }}
             <p class="hero-sub">{{ .Site.Params.author.description }}</p>
+
+            {{/* Socials live here as well as the footer — on a personal site
+                 they're primary navigation, not fine print. */}}
+            {{ with .Site.Params.socialIcons }}
+            <div class="hero-social">
+                {{ partial "socialIcons.html" . }}
+            </div>
+            {{ end }}
 
             {{/* Newest published post, if there is one. `range first 1` is used
                  instead of `index ... 0` because it is a no-op on an empty list
@@ -41,28 +52,27 @@
 
         <main aria-label="Content">
 
-            {{/* ---------- Primary actions ---------- */}}
-            <h2 class="section-label">Server</h2>
-            <div class="card-grid card-grid-feature">
+            {{/* ---------- The Plex server ----------
+                 Three equal cards. Join is no longer a full-width feature —
+                 the home page is about Nash; the server is one thing he runs. */}}
+            <h2 class="section-label">The Plex server</h2>
+            <div class="card-grid card-grid-3">
 
-                <a class="tile tile-primary" href="/join/">
-                    <span class="tile-badge">{{ partial "icon.html" "ticket" }}</span>
-                    <span class="tile-body">
-                        <span class="tile-title">Join the Plex server</span>
-                        <span class="tile-desc">Got an invite code from me? Redeem it here and you'll be watching in about two minutes.</span>
-                    </span>
-                    <span class="tile-cta">Start &rarr;</span>
+                <a class="tile" href="/join/">
+                    {{ partial "icon.html" "ticket" }}
+                    <h3 class="tile-title">Join <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
+                    <p class="tile-desc">Got an invite code from me? Redeem it here and you'll be watching in about two minutes.</p>
                 </a>
 
                 <a class="tile" href="{{ $svc.plexWatch }}" target="_blank" rel="noopener">
                     {{ partial "icon.html" "play" }}
-                    <h3 class="tile-title">Watch on Plex <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
+                    <h3 class="tile-title">Watch <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
                     <p class="tile-desc">Already a member? Open the library and start something.</p>
                 </a>
 
                 <a class="tile" href="{{ $svc.seerr }}" target="_blank" rel="noopener">
                     {{ partial "icon.html" "search" }}
-                    <h3 class="tile-title">Request a movie or show <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
+                    <h3 class="tile-title">Request <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
                     <p class="tile-desc">If it isn't in the library, ask for it. Most requests land within a day.</p>
                 </a>
 

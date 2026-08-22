@@ -25,7 +25,10 @@ title = 'Nash Gibson'
 [params.author]
   name = 'Nash Gibson'
   intro = 'Nash Gibson'
-  description = 'I run a Plex server for friends and family. Grab an invite, request whatever you want, and watch it anywhere.'
+  # Short line under your name. Keep it to a handful of words.
+  tagline = 'Self-hosting everything I can get my hands on.'
+  # The main bio paragraph. Edit freely — this is the most "you" text on the site.
+  description = "I'm Nash. This site used to live on Carrd; now it runs on hardware in my house, which is more or less the point. Most of what I build ends up self-hosted — including the Plex server my friends and family watch off of."
 
 [params.logo]
   path = "/images/logo.png"

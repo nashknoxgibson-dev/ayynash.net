@@ -1,6 +1,6 @@
 +++
 date = '2026-05-31T08:56:28-05:00'
-draft = true
+draft = false
 title = 'EVERYTHING WORKS'
 +++
 

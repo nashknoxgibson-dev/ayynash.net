@@ -37,7 +37,7 @@ You install Plex, sign in, and my library shows up alongside anything else you h
 # --- FAQ --------------------------------------------------------------------
 [[faqs]]
   q = 'Does this cost anything?'
-  a = "No. The server, the library, and your access are free. Plex itself is free to use — you'll see them advertise Plex Pass, but you don't need it for any of this. I pay about $80+ a month to keep the server running until I'm able to Self Host everything. :p"
+  a = "No. The server, the library, and your access are free. Plex itself is free to use — you'll see them advertise Plex Pass, but you don't need it for any of this."
 
 [[faqs]]
   q = 'What devices does it work on?'

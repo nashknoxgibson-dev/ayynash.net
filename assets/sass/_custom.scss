@@ -95,6 +95,15 @@ h2.section-heading {
   }
 }
 
+// Three equal cards; collapses to one column on a phone.
+.card-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+
+  @include media-query($on-mobile) {
+    grid-template-columns: 1fr;
+  }
+}
+
 // Home: the Join card leads full-width, the other two sit under it.
 .card-grid-feature {
   grid-template-columns: 1fr 1fr;
@@ -315,12 +324,62 @@ h2.section-heading {
     }
   }
 
+  .hero-tagline {
+    margin: 0 0 0.9rem;
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
   .hero-sub {
-    max-width: 34rem;
+    max-width: 36rem;
     margin: 0 auto;
     font-size: 1.03rem;
-    line-height: 1.65;
+    line-height: 1.7;
     color: var(--ink-muted);
+  }
+
+  // Socials promoted out of the footer.
+  .hero-social {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 1.5rem;
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      text-decoration: none !important;
+      transition: border-color 0.16s ease, background-color 0.16s ease,
+        transform 0.16s ease;
+
+      &:hover,
+      &:focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--border-strong);
+        background: var(--surface-raised);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+    }
+
+    svg {
+      width: 21px;
+      height: 21px;
+      color: var(--ink-muted);
+      transition: color 0.16s ease;
+    }
+
+    a:hover svg { color: var(--accent); }
   }
 }
 
