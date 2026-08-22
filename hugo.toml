@@ -26,7 +26,7 @@ title = 'Nash Gibson'
   name = 'Nash Gibson'
   intro = 'Nash Gibson'
   # Short line under your name. Keep it to a handful of words.
-  tagline = 'beep boop, boop boop boop beep beep.'
+  tagline = "beep boop, boop boop boop beep beep."
   # The main bio paragraph. Edit freely — this is the most "you" text on the site.
   description = "I'm Nash. This site is mainly used as a redirect for my Plex Server, I don't have important stuff here (for now). Socials below if you care :p"
 
