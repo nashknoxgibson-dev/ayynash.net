@@ -30,9 +30,11 @@
                  instead of `index ... 0` because it is a no-op on an empty list
                  rather than an out-of-range build error. */}}
             {{ range first 1 (where .Site.RegularPages "Type" "in" .Site.Params.mainSections).ByDate.Reverse }}
-            <a class="status-chip" href="{{ .RelPermalink }}">
+            <a class="status-chip" href="/posts/">
                 <span class="dot" aria-hidden="true"></span>
-                Latest update: {{ .Title }}
+                <span class="chip-label">Latest update:</span>
+                <span class="chip-title">{{ .Title }}</span>
+                <span class="chip-arrow" aria-hidden="true">&rarr;</span>
             </a>
             {{ end }}
         </section>
@@ -66,19 +68,8 @@
 
             </div>
 
-            {{/* ---------- Updates ---------- */}}
-            {{ $posts := (where .Site.RegularPages "Type" "in" .Site.Params.mainSections).ByDate.Reverse }}
-            {{ if $posts }}
-            <section class="home-updates">
-                <h2 class="section-label">Server status &amp; updates</h2>
-                {{ range first 4 $posts }}
-                {{ partial "postCard" . }}
-                {{ end }}
-                {{ if gt (len $posts) 4 }}
-                <a class="see-all" href="/posts/">All updates &rarr;</a>
-                {{ end }}
-            </section>
-            {{ end }}
+            {{/* Posts deliberately do NOT appear here — they live on /posts/.
+                 The status chip in the hero is the only pointer to them. */}}
 
         </main>
     </div>

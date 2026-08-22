@@ -37,7 +37,7 @@ You install Plex, sign in, and my library shows up alongside anything else you h
 # --- FAQ --------------------------------------------------------------------
 [[faqs]]
   q = 'Does this cost anything?'
-  a = "No. The server, the library, and your access are free. Plex itself is free to use — you'll see them advertise Plex Pass, but you don't need it for any of this."
+  a = "No. The server, the library, and your access are free. Plex itself is free to use — you'll see them advertise Plex Pass, but you don't need it for any of this. I pay about $80+ a month to keep the server running until I'm able to Self Host everything. :p"
 
 [[faqs]]
   q = 'What devices does it work on?'
@@ -57,9 +57,9 @@ You install Plex, sign in, and my library shows up alongside anything else you h
 
 [[faqs]]
   q = 'Can I share my login with someone else?'
-  a = "Please don't — send them my way for their own invite instead. Shared logins make it impossible for me to tell who's using what, and simultaneous streams on one account will kick each other off."
+  a = "Please don't — send them my way for their own invite instead. Shared logins make it impossible for me to tell who's using what, and simultaneous streams on one account will kick each other off. If someone you know is intrested in joining, PLEASE TELL ME FIRST!!!!"
 
 [[faqs]]
   q = 'Is the server always up?'
-  a = "Mostly. It's a machine in my house, so it goes down occasionally for maintenance or when I break something. I post outages and updates on the site's Updates page."
+  a = "Mostly. I pay almost $80+ a month for the server, There shouldn't be any connections issues. If issues pop up please don't hesitate to contact me!"
 +++

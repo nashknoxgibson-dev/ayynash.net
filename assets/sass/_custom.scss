@@ -340,6 +340,7 @@ h2.section-heading {
   text-decoration: none !important;
 
   .dot {
+    flex: none;
     width: 7px;
     height: 7px;
     border-radius: 50%;
@@ -347,7 +348,30 @@ h2.section-heading {
     box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.18);
   }
 
-  &:hover { border-color: var(--border-strong); }
+  .chip-title {
+    color: var(--ink);
+    // Long post titles shouldn't blow the chip out on a phone.
+    max-width: 22ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chip-arrow {
+    color: var(--ink-muted);
+    transition: transform 0.16s ease;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--border-strong);
+    .chip-arrow { transform: translateX(3px); }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
 }
 
 // ---- Join page ------------------------------------------------------------
