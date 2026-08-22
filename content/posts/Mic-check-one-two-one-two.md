@@ -1,6 +1,6 @@
 +++
 date = '2026-05-27T20:04:03-05:00'
-draft = false
+draft = true
 title = 'Mic Check One Two One Two'
 +++
 
