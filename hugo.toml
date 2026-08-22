@@ -9,12 +9,23 @@ title = 'Nash Gibson'
 [params]
   sitename = 'Nash Gibson'
   defaultColor = 'dark'
-  description = ':p'
+  description = 'Plex server, media requests, and server status updates.'
+  mainSections = ['posts']
+
+# ---------------------------------------------------------------------------
+# Service URLs — change these in ONE place and every button on the site updates.
+# ---------------------------------------------------------------------------
+[params.services]
+  wizarr    = 'https://invite.ayynash.net/'  # Wizarr root = the "enter your invite code" screen
+  seerr     = 'https://seerr.ayynash.net'    # Jellyseerr/Overseerr — request movies & shows
+  plexWatch = 'https://app.plex.tv/desktop'  # Plex web player
+  plexApps  = 'https://www.plex.tv/media-server-downloads/#plex-app'
+  contact   = 'https://discord.gg/ayynash'   # where people go when they need help
 
 [params.author]
   name = 'Nash Gibson'
-  intro = 'HALLO :D'
-  description = 'Welcome to my site! all my socials and useful links live here.'
+  intro = 'Nash Gibson'
+  description = 'I run a Plex server for friends and family. Grab an invite, request whatever you want, and watch it anywhere.'
 
 [params.logo]
   path = "/images/logo.png"
@@ -52,7 +63,13 @@ title = 'Nash Gibson'
       unsafe = true
 
 [[menu.main]]
-  identifier = "members"
-  name = "Members"
-  url = "/members/"
+  identifier = "join"
+  name = "Join"
+  url = "/join/"
+  weight = 10
+
+[[menu.main]]
+  identifier = "updates"
+  name = "Updates"
+  url = "/posts/"
   weight = 20

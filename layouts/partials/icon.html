@@ -1,0 +1,19 @@
+{{/*
+  Inline SVG icons. Usage: {{ partial "icon.html" "plex" }}
+  Kept inline (not sprite/CDN) so nothing external is fetched.
+*/}}
+{{- $n := . -}}
+{{- $a := `xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="tile-icon" aria-hidden="true"` -}}
+{{- if eq $n "play" -}}
+<svg {{ $a | safeHTMLAttr }}><path d="m6 3 14 9-14 9V3Z"/></svg>
+{{- else if eq $n "ticket" -}}
+<svg {{ $a | safeHTMLAttr }}><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 6v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-6Z"/><path d="M13 5v2M13 11v2M13 17v2"/></svg>
+{{- else if eq $n "search" -}}
+<svg {{ $a | safeHTMLAttr }}><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+{{- else if eq $n "download" -}}
+<svg {{ $a | safeHTMLAttr }}><path d="M12 3v12"/><path d="m7 12 5 5 5-5"/><path d="M4 20h16"/></svg>
+{{- else if eq $n "help" -}}
+<svg {{ $a | safeHTMLAttr }}><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.2-2.5 3.9"/><path d="M12 17.4h.01"/></svg>
+{{- else if eq $n "megaphone" -}}
+<svg {{ $a | safeHTMLAttr }}><path d="M4 9v6h3l8 4V5L7 9H4Z"/><path d="M18.5 9.5a3.5 3.5 0 0 1 0 5"/></svg>
+{{- end -}}

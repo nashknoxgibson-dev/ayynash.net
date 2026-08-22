@@ -1,17 +1,6 @@
-export async function onRequestPost(context) {
-  const { request, env } = context;
-  const formData = await request.formData();
-  const password = formData.get("password");
-
-  if (password !== env.MEMBERS_PASS) {
-    return new Response("Wrong password", { status: 401 });
-  }
-
-  return new Response(null, {
-    status: 302,
-    headers: {
-      "Location": "/members/",
-      "Set-Cookie": `__Host-members_session=${env.MEMBERS_COOKIE}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900`
-    }
-  });
+// Retired. This used to accept the shared members password and set the
+// __Host-members_session cookie. The members area is now the public /join/
+// page, so this endpoint no longer authenticates anything — it just forwards.
+export async function onRequest(context) {
+  return Response.redirect(new URL("/join/", context.request.url), 301);
 }

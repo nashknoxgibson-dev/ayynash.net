@@ -1,10 +1,7 @@
+// The members area has been folded into the public /join/ page.
+// This used to gate /members/ behind a shared password (MEMBERS_COOKIE).
+// It now just forwards old links so nothing 404s.
 export async function onRequest(context) {
-  const { request, env } = context;
-  const cookie = request.headers.get("Cookie") || "";
-
-  if (!cookie.includes(`__Host-members_session=${env.MEMBERS_COOKIE}`)) {
-    return Response.redirect(new URL("/members-login/", request.url), 302);
-  }
-
-  return context.next();
+  const { request } = context;
+  return Response.redirect(new URL("/join/", request.url), 301);
 }

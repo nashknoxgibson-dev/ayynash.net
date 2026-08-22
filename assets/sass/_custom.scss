@@ -1,0 +1,552 @@
+// ===========================================================================
+// Custom styles for ayynash.net
+// This file overrides the theme's empty _custom.scss and is imported last,
+// so everything here wins without touching the vendored theme.
+// ===========================================================================
+
+// ---- Theme tokens ---------------------------------------------------------
+// Light is the base; dark re-declares the same names. Both are always defined,
+// so nothing depends on a media query alone.
+:root {
+  --accent: #96620a;          // Plex gold, darkened so white text on it passes AA
+  --accent-strong: #774d06;
+  --accent-contrast: #ffffff; // text that sits on the accent
+  --surface: #ffffff;
+  --surface-raised: #f6f7f9;
+  --border: #e0e3e8;
+  --border-strong: #c9cdd4;
+  --ink: #1b1e21;
+  --ink-muted: #5c636d;
+  --shadow: 0 1px 2px rgba(16, 20, 28, 0.06), 0 8px 24px rgba(16, 20, 28, 0.06);
+  --shadow-lift: 0 2px 4px rgba(16, 20, 28, 0.08), 0 14px 34px rgba(16, 20, 28, 0.12);
+}
+
+@mixin custom-dark {
+  --accent: #e5a00d;          // Plex gold proper
+  --accent-strong: #f2b62e;
+  --accent-contrast: #17120a;
+  --surface: #131418;
+  --surface-raised: #1b1d25;
+  --border: #282b34;
+  --border-strong: #3a3e49;
+  --ink: #eaeaea;
+  --ink-muted: #9aa1ad;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.32);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.5), 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+html.dark { @include custom-dark; }
+
+@media (prefers-color-scheme: dark) {
+  html:not(.light) { @include custom-dark; }
+}
+
+// ---- Shared primitives ----------------------------------------------------
+// The theme's wrapper is tuned for prose (~660px). Card grids need more room.
+.wrapper-wide {
+  max-width: calc(940px - (#{$spacing-full} * 2));
+}
+
+// !important guards against the theme's .page-content h2 rules.
+h2.section-label,
+.section-label {
+  display: block;
+  font-size: 0.75rem !important;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 0 0 1.1rem !important;
+  padding: 0;
+  border: 0;
+}
+
+// A normal section heading (not the tiny uppercase label).
+h2.section-heading {
+  font-size: 1.4rem !important;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.85rem !important;
+  padding: 0;
+  border: 0;
+}
+
+.card-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+  margin: 0 0 3.4rem;
+
+  @include media-query($on-mobile) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Home: the Join card leads full-width, the other two sit under it.
+.card-grid-feature {
+  grid-template-columns: 1fr 1fr;
+
+  // Featured card runs horizontally: badge / text / CTA.
+  > .tile-primary {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 22px 24px;
+
+    .tile-badge {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(229, 160, 13, 0.15);
+      border: 1px solid rgba(229, 160, 13, 0.35);
+
+      .tile-icon { margin: 0; width: 23px; height: 23px; }
+    }
+
+    .tile-body { flex: 1 1 auto; min-width: 0; }
+
+    .tile-title {
+      display: block;
+      font-size: 1.2rem;
+      margin-bottom: 3px;
+    }
+
+    .tile-desc {
+      display: block;
+      font-size: 0.93rem;
+      max-width: 52ch;
+    }
+
+    .tile-cta {
+      flex: none;
+      padding: 11px 20px;
+      border-radius: 9px;
+      background: var(--accent);
+      color: var(--accent-contrast);
+      font-size: 0.92rem;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: transform 0.16s ease;
+    }
+
+    &:hover .tile-cta { transform: translateX(3px); }
+  }
+
+  @include media-query($on-mobile) {
+    grid-template-columns: 1fr;
+
+    > .tile-primary {
+      grid-column: auto;
+      flex-wrap: wrap;
+      gap: 14px;
+
+      .tile-body { flex-basis: 100%; order: 3; }
+      .tile-cta { margin-left: auto; }
+    }
+  }
+}
+
+// A whole card is one link.
+.tile {
+  display: block;
+  padding: 20px 20px 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+  text-decoration: none !important;
+  color: inherit !important;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-lift);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .tile-icon {
+    display: block;
+    width: 26px;
+    height: 26px;
+    margin-bottom: 13px;
+    color: var(--accent);
+  }
+
+  .tile-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 5px;
+    font-size: 1.035rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+
+  .tile-desc {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--ink-muted);
+  }
+
+  .tile-arrow {
+    font-size: 0.85em;
+    color: var(--ink-muted);
+    transition: transform 0.16s ease;
+  }
+
+  &:hover .tile-arrow { transform: translateX(3px); }
+
+  // The one card that should pull the eye.
+  &.tile-primary {
+    border-color: var(--accent);
+    background:
+      linear-gradient(180deg, rgba(229, 160, 13, 0.09), rgba(229, 160, 13, 0.02)),
+      var(--surface-raised);
+
+    .tile-title { color: var(--accent); }
+  }
+}
+
+// ---- Buttons --------------------------------------------------------------
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 11px;
+  margin: 1.6rem 0 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, background-color 0.14s ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-contrast) !important;
+
+  &:hover { background: var(--accent-strong); }
+}
+
+.btn-secondary {
+  background: var(--surface-raised);
+  border-color: var(--border-strong);
+  color: var(--ink) !important;
+}
+
+.btn-lg {
+  padding: 16px 30px;
+  font-size: 1.05rem;
+  border-radius: 12px;
+}
+
+// ---- Home hero ------------------------------------------------------------
+.hero {
+  margin: 3.6rem 0 3.2rem;
+  text-align: center;
+
+  @include media-query($on-mobile) {
+    margin: 2.4rem 0 2.4rem;
+  }
+
+  .hero-avatar {
+    width: 84px;
+    height: 84px;
+    border-radius: 100%;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+  }
+
+  .hero-title {
+    margin: 1.05rem 0 0.5rem;
+    font-size: 2.35rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+
+    @include media-query($on-mobile) {
+      font-size: 1.9rem;
+    }
+  }
+
+  .hero-sub {
+    max-width: 34rem;
+    margin: 0 auto;
+    font-size: 1.03rem;
+    line-height: 1.65;
+    color: var(--ink-muted);
+  }
+}
+
+// Small live-ish status chip under the hero.
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1.35rem;
+  padding: 6px 14px 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-decoration: none !important;
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3fb950;
+    box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.18);
+  }
+
+  &:hover { border-color: var(--border-strong); }
+}
+
+// ---- Join page ------------------------------------------------------------
+.join-hero {
+  margin: 3rem 0 2.6rem;
+
+  .join-eyebrow {
+    display: inline-block;
+    padding: 5px 12px;
+    margin-bottom: 1rem;
+    border-radius: 999px;
+    background: rgba(229, 160, 13, 0.14);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 0 0 0.65rem;
+    font-size: 2.5rem;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+
+    @include media-query($on-mobile) { font-size: 1.95rem; }
+  }
+
+  p {
+    max-width: 38rem;
+    margin: 0;
+    font-size: 1.04rem;
+    color: var(--ink-muted);
+  }
+}
+
+// Numbered steps.
+.steps {
+  list-style: none;
+  margin: 0 0 3.4rem;
+  padding: 0;
+  counter-reset: step;
+
+  > li {
+    position: relative;
+    margin: 0;
+    padding: 0 0 1.8rem 3.4rem;
+
+    // vertical connector line
+    &::before {
+      content: "";
+      position: absolute;
+      left: 17px;
+      top: 34px;
+      bottom: 2px;
+      width: 2px;
+      background: var(--border);
+    }
+
+    &:last-child {
+      padding-bottom: 0;
+      &::before { display: none; }
+    }
+
+    .step-num {
+      counter-increment: step;
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-raised);
+      color: var(--accent);
+      font-size: 0.92rem;
+      font-weight: 800;
+      line-height: 1;
+
+      &::before { content: counter(step); }
+    }
+
+    h3 {
+      margin: 5px 0 0.35rem;
+      font-size: 1.08rem;
+      line-height: 1.4;
+    }
+
+    p {
+      margin: 0;
+      color: var(--ink-muted);
+      font-size: 0.95rem;
+      line-height: 1.68;
+    }
+  }
+}
+
+// The big invite call-to-action.
+.invite-box {
+  margin: 0 0 3.4rem;
+  padding: 30px;
+  border: 1px solid var(--accent);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(229, 160, 13, 0.1), rgba(229, 160, 13, 0.02)),
+    var(--surface-raised);
+  text-align: center;
+
+  @include media-query($on-mobile) { padding: 24px 18px; }
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    line-height: 1.25;
+  }
+
+  p {
+    max-width: 30rem;
+    margin: 0 auto;
+    color: var(--ink-muted);
+    font-size: 0.96rem;
+  }
+
+  .btn-row { justify-content: center; }
+
+  .invite-note {
+    display: block;
+    margin-top: 1.1rem;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+
+    a {
+      color: var(--accent) !important;
+      font-weight: 600;
+    }
+  }
+}
+
+// Plain prose block on the join page.
+.prose {
+  margin-bottom: 3.2rem;
+
+  p {
+    margin: 0 0 0.95rem;
+    color: var(--ink-muted);
+    line-height: 1.75;
+    &:last-child { margin-bottom: 0; }
+  }
+}
+
+// FAQ using native disclosure — no JS.
+.faq {
+  margin: 0 0 3rem;
+
+  details {
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--surface-raised);
+    margin-bottom: 9px;
+    overflow: hidden;
+
+    &[open] { border-color: var(--border-strong); }
+
+    summary {
+      padding: 15px 18px;
+      cursor: pointer;
+      font-weight: 650;
+      font-size: 0.96rem;
+      color: var(--ink);
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+
+      &::-webkit-details-marker { display: none; }
+
+      &::after {
+        content: "+";
+        flex: none;
+        font-size: 1.25rem;
+        font-weight: 400;
+        line-height: 1;
+        color: var(--ink-muted);
+      }
+    }
+
+    &[open] summary::after { content: "\2212"; } // minus
+
+    .faq-body {
+      padding: 0 18px 16px;
+      font-size: 0.93rem;
+      line-height: 1.7;
+      color: var(--ink-muted);
+
+      p { margin: 0 0 0.7rem; &:last-child { margin-bottom: 0; } }
+      a { color: var(--accent); }
+    }
+  }
+}
+
+// ---- Post list on home ----------------------------------------------------
+.home-updates {
+  margin-bottom: 3rem;
+
+  .see-all {
+    display: inline-block;
+    margin-top: 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+}

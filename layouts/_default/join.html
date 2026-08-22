@@ -1,0 +1,101 @@
+{{ define "main" }}
+{{- $svc := .Site.Params.services -}}
+{{- $p := .Params -}}
+
+<div class="wrapper wrapper-wide">
+
+  {{/* ---------- Hero ---------- */}}
+  <header class="join-hero">
+    {{ with $p.eyebrow }}<span class="join-eyebrow">{{ . }}</span>{{ end }}
+    <h1>{{ $p.headline | default .Title }}</h1>
+    {{ with $p.subhead }}<p>{{ . }}</p>{{ end }}
+  </header>
+
+  <main aria-label="Content">
+
+    {{/* ---------- The invite CTA, up top where it belongs ---------- */}}
+    <section class="invite-box">
+      <h2>Ready? Redeem your code</h2>
+      <p>This opens the invite page, where you'll enter the code I sent you and link your Plex account.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary btn-lg" href="{{ $svc.wizarr }}" target="_blank" rel="noopener">
+          Enter invite code &rarr;
+        </a>
+      </div>
+      <span class="invite-note">
+        Don't have a code yet? <a href="{{ $svc.contact }}" target="_blank" rel="noopener">Message me</a> and I'll send one.
+      </span>
+    </section>
+
+    {{/* ---------- What is Plex ---------- */}}
+    {{ with $p.whatIsPlex }}
+    <section class="prose">
+      <h2 class="section-heading">{{ .title }}</h2>
+      {{ .body | markdownify }}
+    </section>
+    {{ end }}
+
+    {{/* ---------- Steps ---------- */}}
+    {{ with $p.steps }}
+    <section>
+      <h2 class="section-label">How it works</h2>
+      <ol class="steps">
+        {{ range . }}
+        <li>
+          <span class="step-num" aria-hidden="true"></span>
+          <h3>{{ .title }}</h3>
+          <p>{{ .body }}</p>
+        </li>
+        {{ end }}
+      </ol>
+    </section>
+    {{ end }}
+
+    {{/* ---------- Once you're in ---------- */}}
+    <section>
+      <h2 class="section-label">Once you're in</h2>
+      <div class="card-grid">
+
+        <a class="tile" href="{{ $svc.seerr }}" target="_blank" rel="noopener">
+          {{ partial "icon.html" "search" }}
+          <h3 class="tile-title">Request media <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
+          <p class="tile-desc">Can't find something? Search for it here and it gets added to the library automatically.</p>
+        </a>
+
+        <a class="tile" href="{{ $svc.plexWatch }}" target="_blank" rel="noopener">
+          {{ partial "icon.html" "play" }}
+          <h3 class="tile-title">Open Plex <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
+          <p class="tile-desc">Watch straight from your browser — no install needed.</p>
+        </a>
+
+        <a class="tile" href="{{ $svc.plexApps }}" target="_blank" rel="noopener">
+          {{ partial "icon.html" "download" }}
+          <h3 class="tile-title">Get the app <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
+          <p class="tile-desc">TV, phone, tablet, console. Grab Plex for whatever you actually watch on.</p>
+        </a>
+
+        <a class="tile" href="{{ $svc.contact }}" target="_blank" rel="noopener">
+          {{ partial "icon.html" "help" }}
+          <h3 class="tile-title">Need help <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
+          <p class="tile-desc">Stuck on any of this, or something won't play? Ping me.</p>
+        </a>
+
+      </div>
+    </section>
+
+    {{/* ---------- FAQ ---------- */}}
+    {{ with $p.faqs }}
+    <section class="faq">
+      <h2 class="section-label">Questions</h2>
+      {{ range . }}
+      <details>
+        <summary>{{ .q }}</summary>
+        <div class="faq-body">{{ .a | markdownify }}</div>
+      </details>
+      {{ end }}
+    </section>
+    {{ end }}
+
+  </main>
+</div>
+{{ end }}

@@ -1,0 +1,6 @@
+# Cloudflare Pages redirects.
+# The password-gated members area is retired — everything lives on /join/ now.
+/members       /join/   301
+/members/*     /join/   301
+/members-login /join/   301
+/members-login/* /join/ 301

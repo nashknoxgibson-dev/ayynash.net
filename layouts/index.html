@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+{{- $defaultColor := .Site.Params.defaultColor | default "auto" -}}
+{{- if eq $defaultColor "dark" -}}
+<html lang="{{ .Site.LanguageCode }}" class="dark">
+{{- else if eq $defaultColor "light" -}}
+<html lang="{{ .Site.LanguageCode }}" class="light">
+{{- else -}}
+<html lang="{{ .Site.LanguageCode }}">
+{{- end -}}
+
+{{- partial "head.html" . -}}
+
+<body data-theme="{{ $defaultColor }}" class="notransition">
+    {{- partial "scriptsBodyStart.html" . -}}
+    {{- partial "header.html" . -}}
+
+    {{- $svc := .Site.Params.services -}}
+
+    <div class="wrapper wrapper-wide">
+
+        {{/* ---------- Hero ---------- */}}
+        <section class="hero">
+            {{ with .Site.Params.logo.path }}
+            <img class="hero-avatar" src="{{ . }}" alt="{{ $.Site.Params.logo.alt }}" width="84" height="84" />
+            {{ end }}
+            <h1 class="hero-title">{{ .Site.Params.author.intro }}</h1>
+            <p class="hero-sub">{{ .Site.Params.author.description }}</p>
+
+            {{ with $.Site.GetPage "/posts" }}
+            {{ $latest := index (first 1 (where $.Site.RegularPages "Type" "in" $.Site.Params.mainSections).ByDate.Reverse) 0 }}
+            {{ with $latest }}
+            <a class="status-chip" href="{{ .RelPermalink }}">
+                <span class="dot" aria-hidden="true"></span>
+                Latest update: {{ .Title }}
+            </a>
+            {{ end }}
+            {{ end }}
+        </section>
+
+        <main aria-label="Content">
+
+            {{/* ---------- Primary actions ---------- */}}
+            <h2 class="section-label">Server</h2>
+            <div class="card-grid card-grid-feature">
+
+                <a class="tile tile-primary" href="/join/">
+                    <span class="tile-badge">{{ partial "icon.html" "ticket" }}</span>
+                    <span class="tile-body">
+                        <span class="tile-title">Join the Plex server</span>
+                        <span class="tile-desc">Got an invite code from me? Redeem it here and you'll be watching in about two minutes.</span>
+                    </span>
+                    <span class="tile-cta">Start &rarr;</span>
+                </a>
+
+                <a class="tile" href="{{ $svc.plexWatch }}" target="_blank" rel="noopener">
+                    {{ partial "icon.html" "play" }}
+                    <h3 class="tile-title">Watch on Plex <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
+                    <p class="tile-desc">Already a member? Open the library and start something.</p>
+                </a>
+
+                <a class="tile" href="{{ $svc.seerr }}" target="_blank" rel="noopener">
+                    {{ partial "icon.html" "search" }}
+                    <h3 class="tile-title">Request a movie or show <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
+                    <p class="tile-desc">If it isn't in the library, ask for it. Most requests land within a day.</p>
+                </a>
+
+            </div>
+
+            {{/* ---------- Updates ---------- */}}
+            {{ $posts := (where .Site.RegularPages "Type" "in" .Site.Params.mainSections).ByDate.Reverse }}
+            {{ if $posts }}
+            <section class="home-updates">
+                <h2 class="section-label">Server status &amp; updates</h2>
+                {{ range first 4 $posts }}
+                {{ partial "postCard" . }}
+                {{ end }}
+                {{ if gt (len $posts) 4 }}
+                <a class="see-all" href="/posts/">All updates &rarr;</a>
+                {{ end }}
+            </section>
+            {{ end }}
+
+        </main>
+    </div>
+
+    {{- partial "footer.html" . -}}
+    {{- partial "scriptsBodyEnd.html" . -}}
+</body>
+
+</html>
