@@ -1,27 +1,27 @@
 //////////////// 1. Light Colors /////////////////
-// This site is styled as a permanent black/green terminal, so the "light"
-// palette below is intentionally identical to the "dark" one further down —
-// there's no light mode to fall back to, on purpose.
-$text-base-color: #2bcf2b;
-$text-link-blue: #33ff33;
-$text-link-blue-active: #b3ffb3;
-$bloquote-border: #1a4d1a;
-$blockquote-text: #1f8f1f;
-$inline-code-text: #33ff33;
-$inline-code-bg: #001a00;
-$toc-bg: #001400;
-$go-top-bg: #123312;
-$go-top-bg-hover: #1a4d1a;
+// "Paper terminal": same identity as the dark theme (green ink, monospace),
+// just inverted onto a soft cream page instead of OLED black — for visitors
+// who'd rather not stare at neon green on pure black.
+$text-base-color: #2b5225;
+$text-link-blue: #1f7a1f;
+$text-link-blue-active: #0f2b0c;
+$bloquote-border: #b7ab88;
+$blockquote-text: #5c7a52;
+$inline-code-text: #163a13;
+$inline-code-bg: #e6e0c9;
+$toc-bg: #ebe5d2;
+$go-top-bg: #dbe6d2;
+$go-top-bg-hover: #cddcc1;
 
 // NOTE: in this theme $black is the LIGHT-mode *text* color and $white is
 // the LIGHT-mode *background* color (the names describe the classic light
 // theme they replaced, not literal black/white) — so these two are
 // deliberately inverted from what their names suggest.
-$black: #33ff33;
-$light: #123312;
-$smoke: #1a4d1a;
-$gray: #1f8f1f;
-$white: #000000;
+$black: #163a13;
+$light: #d4cbb0;
+$smoke: #b7ab88;
+$gray: #5c7a52;
+$white: #f3efe1;
 
 //////////////// 2. Dark Colors /////////////////
 $dark-text-base-color: #2bcf2b;

@@ -5,29 +5,33 @@
 // ===========================================================================
 
 // ---- Theme tokens ---------------------------------------------------------
-// Black/green terminal palette. Light and dark are intentionally identical —
-// this site no longer has a light mode — so nothing flashes the old gold
-// theme before JS (or a media query) picks a mode.
+// Same terminal identity in both modes (green ink, monospace) — light mode
+// is a "paper terminal" (cream page, dark green ink) rather than a return to
+// the old gold/white theme, so nothing else about the site's voice changes.
+// --accent-rgb shadows --accent as a bare "r, g, b" triple so rgba() tints
+// elsewhere in this file can ride along with whichever mode is active.
 :root {
+  --accent: #1f7a1f;          // dark green ink, for links/buttons/accents
+  --accent-rgb: 31, 122, 31;
+  --accent-strong: #163a13;   // darker green for hover/active states
+  --accent-contrast: #f8f5ea; // text that sits on the accent (cream, not stark white)
+  --surface: #f3efe1;         // warm paper page background
+  --surface-raised: #ebe5d2;  // slightly deeper paper tone, just enough to read as a card
+  --border: #d4cbb0;
+  --border-strong: #b7ab88;
+  --ink: #163a13;
+  --ink-muted: #5c7a52;
+  --shadow: 0 1px 2px rgba(22, 58, 19, 0.08), 0 8px 24px rgba(22, 58, 19, 0.06);
+  --shadow-lift: 0 2px 6px rgba(22, 58, 19, 0.12), 0 16px 36px rgba(22, 58, 19, 0.14);
+}
+
+@mixin custom-dark {
   --accent: #33ff33;          // phosphor terminal green
+  --accent-rgb: 51, 255, 51;
   --accent-strong: #66ff66;   // brighter green for hover/focus states
   --accent-contrast: #000000; // text that sits on the accent (reverse video)
   --surface: #000000;         // OLED black
   --surface-raised: #050805;  // barely-there green-black, just enough to read as a card
-  --border: #123312;
-  --border-strong: #1f5c1f;
-  --ink: #33ff33;
-  --ink-muted: #1f8f1f;
-  --shadow: 0 0 0 1px rgba(51, 255, 51, 0.06), 0 8px 24px rgba(51, 255, 51, 0.05);
-  --shadow-lift: 0 0 0 1px rgba(51, 255, 51, 0.12), 0 0 28px rgba(51, 255, 51, 0.12);
-}
-
-@mixin custom-dark {
-  --accent: #33ff33;
-  --accent-strong: #66ff66;
-  --accent-contrast: #000000;
-  --surface: #000000;
-  --surface-raised: #050805;
   --border: #123312;
   --border-strong: #1f5c1f;
   --ink: #33ff33;
@@ -125,8 +129,8 @@ h2.section-heading {
       width: 48px;
       height: 48px;
       border-radius: 12px;
-      background: rgba(51, 255, 51, 0.15);
-      border: 1px solid rgba(51, 255, 51, 0.35);
+      background: rgba(var(--accent-rgb), 0.15);
+      border: 1px solid rgba(var(--accent-rgb), 0.35);
 
       .tile-icon { margin: 0; width: 23px; height: 23px; }
     }
@@ -236,7 +240,7 @@ h2.section-heading {
   &.tile-primary {
     border-color: var(--accent);
     background:
-      linear-gradient(180deg, rgba(51, 255, 51, 0.09), rgba(51, 255, 51, 0.02)),
+      linear-gradient(180deg, rgba(var(--accent-rgb), 0.09), rgba(var(--accent-rgb), 0.02)),
       var(--surface-raised);
 
     .tile-title { color: var(--accent); }
@@ -405,7 +409,7 @@ h2.section-heading {
     height: 7px;
     border-radius: 50%;
     background: var(--accent);
-    box-shadow: 0 0 0 3px rgba(51, 255, 51, 0.22);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.22);
   }
 
   .chip-title {
@@ -443,7 +447,7 @@ h2.section-heading {
     padding: 5px 12px;
     margin-bottom: 1rem;
     border-radius: 999px;
-    background: rgba(51, 255, 51, 0.14);
+    background: rgba(var(--accent-rgb), 0.14);
     color: var(--accent);
     font-size: 0.72rem;
     font-weight: 800;
@@ -539,7 +543,7 @@ h2.section-heading {
   border: 1px solid var(--accent);
   border-radius: 16px;
   background:
-    linear-gradient(180deg, rgba(51, 255, 51, 0.1), rgba(51, 255, 51, 0.02)),
+    linear-gradient(180deg, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.02)),
     var(--surface-raised);
   text-align: center;
 
@@ -749,5 +753,5 @@ pre {
 // (unrelated to $variables), which would be the one leftover blue thing
 // on an otherwise all-green site.
 a:focus {
-  outline-color: rgba(51, 255, 51, 0.6) !important;
+  outline-color: rgba(var(--accent-rgb), 0.6) !important;
 }
