@@ -12,6 +12,11 @@ title = 'Nash Gibson'
   description = 'Plex server, media requests, and server status updates.'
   mainSections = ['posts']
 
+  # Optional: a TMDB v3 API key turns the placeholder poster art on the home
+  # page into real artwork. Empty = the generated posters stay. The key ends up
+  # visible in the built page, so use a plain read-only v3 key.
+  tmdbKey = ''
+
 [params.webmanifest]
   theme_color = '#000000'
   background_color = '#000000'

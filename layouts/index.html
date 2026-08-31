@@ -1,91 +1,779 @@
-<!DOCTYPE html>
-{{- $defaultColor := .Site.Params.defaultColor | default "auto" -}}
-{{- if eq $defaultColor "dark" -}}
-<html lang="{{ .Site.LanguageCode }}" class="dark">
-{{- else if eq $defaultColor "light" -}}
-<html lang="{{ .Site.LanguageCode }}" class="light">
-{{- else -}}
-<html lang="{{ .Site.LanguageCode }}">
-{{- end -}}
+{{/* ===========================================================================
+     HOME PAGE  ·  ayynash.net v2
 
-{{- partial "head.html" . -}}
+     This page deliberately does NOT use the theme's head/header/footer
+     partials. It ships its own stylesheet, and the theme's SCSS also defines
+     .hero and .tile — loading both would have them fight over the same class
+     names. Every other page on the site still uses the theme layout untouched.
 
-<body data-theme="{{ $defaultColor }}" class="notransition">
-    {{- partial "scriptsBodyStart.html" . -}}
-    {{- partial "header.html" . -}}
+     Service URLs come from [params.services] in hugo.toml, so a URL change
+     there updates this page, /join/, and anything else at the same time.
+   =========================================================================== */}}
+{{- $svc := .Site.Params.services -}}
+{{- $desc := .Site.Params.description -}}
+{{- $pageTitle := printf "Welcome to my site — %s" .Site.Title -}}
+<!doctype html>
+<html lang="{{ .Site.LanguageCode | default "en" }}" data-theme="{{ .Site.Params.defaultColor | default "dark" }}">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    {{- $svc := .Site.Params.services -}}
+<title>{{ $pageTitle }}</title>
+<meta name="description" content="{{ $desc }}" />
+<link rel="canonical" href="{{ .Permalink }}" />
 
-    <div class="wrapper wrapper-wide">
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="{{ .Site.Params.sitename | default .Site.Title }}" />
+<meta property="og:title" content="{{ $pageTitle }}" />
+<meta property="og:description" content="{{ $desc }}" />
+<meta property="og:url" content="{{ .Permalink }}" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="{{ $pageTitle }}" />
+<meta name="twitter:description" content="{{ $desc }}" />
+{{- with .Site.Params.logo.path }}
+<meta property="og:image" content="{{ . | absURL }}" />
+<meta name="twitter:image" content="{{ . | absURL }}" />
+{{- end }}
 
-        {{/* ---------- Hero ---------- */}}
-        <section class="hero">
-            {{ with .Site.Params.logo.path }}
-            <img class="hero-avatar" src="{{ . }}" alt="{{ $.Site.Params.logo.alt }}" width="84" height="84" />
-            {{ end }}
-            <h1 class="hero-title">{{ .Site.Params.author.intro }}</h1>
-            {{ with .Site.Params.author.tagline }}
-            <p class="hero-tagline">{{ . }}</p>
-            {{ end }}
-            <p class="hero-sub">{{ .Site.Params.author.description }}</p>
+{{/* Favicons and the manifest come from the theme's asset bundle, exactly as
+     they do on every other page — only the stylesheet is left out. */}}
+<link rel="apple-touch-icon" sizes="180x180" href="{{ (resources.Get "icons/apple-touch-icon.png").RelPermalink }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ (resources.Get "icons/favicon-32x32.png").RelPermalink }}">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ (resources.Get "icons/favicon-16x16.png").RelPermalink }}">
+<link rel="icon" type="image/svg+xml" href="{{ (resources.Get "icons/favicon.svg").RelPermalink }}">
+<link rel="shortcut icon" href="{{ (resources.Get "icons/favicon.ico" | resources.Copy "favicon.ico").RelPermalink }}">
+{{- partial "webmanifest.html" . -}}
+<meta name="theme-color" content="#33ff33">
+<meta name="color-scheme" content="dark light">
 
-            {{/* Socials live here as well as the footer — on a personal site
-                 they're primary navigation, not fine print. */}}
-            {{ with .Site.Params.socialIcons }}
-            <div class="hero-social">
-                {{ partial "socialIcons.html" . }}
-            </div>
-            {{ end }}
+{{/* JetBrains Mono, same as the rest of the site. */}}
+{{ if templates.Exists "partials/custom-head.html" }}{{ partial "custom-head.html" . }}{{ end }}
+<style>
+/* ===========================================================================
+   AYYNASH.NET  ·  v2
+   One file, no dependencies, all vanilla.
 
-            {{/* Newest published post, if there is one. `range first 1` is used
-                 instead of `index ... 0` because it is a no-op on an empty list
-                 rather than an out-of-range build error. */}}
-            {{ range first 1 (where .Site.RegularPages "Type" "in" .Site.Params.mainSections).ByDate.Reverse }}
-            <a class="status-chip" href="/posts/">
-                <span class="dot" aria-hidden="true"></span>
-                <span class="chip-label">Latest update:</span>
-                <span class="chip-title">{{ .Title }}</span>
-                <span class="chip-arrow" aria-hidden="true">&rarr;</span>
-            </a>
-            {{ end }}
-        </section>
+   EFFECTS INDEX  (each is commented in both CSS + JS with the same number)
+     [1] Line-mask hero reveal        [6] Pinned horizontal scroll
+     [2] Eased scroll driver (lerp)   [7] Magnetic buttons
+     [3] Scroll-velocity skew         [8] Film grain overlay
+     [4] Parallax marquee rows        [9] Pinned panel scrub
+     [5] Word-by-word illumination
+   =========================================================================== */
 
-        <main aria-label="Content">
+:root{
+  /* everything else on the page derives from these two */
+  --accent:#33ff33;
+  --accent-2:#a3e635;
 
-            {{/* ---------- The Plex server ----------
-                 Three equal cards. Join is no longer a full-width feature —
-                 the home page is about Nash; the server is one thing he runs. */}}
-            <h2 class="section-label">The Plex server</h2>
-            <div class="card-grid card-grid-3">
+  --bg:#07080b;
+  --bg-2:#0c0e13;
+  --ink:#f4f5f7;
+  --dim:#868997;
+  --line:#1c1f27;
+  --card:#0f1117;
+  /* One stack for the whole page — JetBrains Mono is already loaded site-wide
+     by partials/custom-head.html, so /join/ and /posts/ set in the same face. */
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --glow:color-mix(in srgb, var(--accent) 18%, transparent);
+  --faint:color-mix(in srgb, var(--accent) 10%, transparent);
+}
+:root[data-theme="light"]{
+  --bg:#fafaf9; --bg-2:#f1f1ef; --ink:#0f1116; --dim:#5c5f6b;
+  --line:#e3e3e0; --card:#ffffff;
+  /* the darker green ink from _custom.scss — #33ff33 on a near-white page is
+     far too faint for the eyebrows and the small go-links */
+  --accent:#1f7a1f; --accent-2:#4d7c0f;
+}
 
-                <a class="tile" href="/join/">
-                    {{ partial "icon.html" "ticket" }}
-                    <h3 class="tile-title">Join <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
-                    <p class="tile-desc">Got an invite code from me? Redeem it here and you'll be watching in about two minutes.</p>
-                </a>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--mono);
+  line-height:1.55;overflow-x:hidden;
+  transition:background .45s ease,color .45s ease;
+}
+a{color:inherit;text-decoration:none}
+.mono{font-family:var(--mono)}
+.wrap{max-width:1100px;margin:0 auto;padding:0 28px}
 
-                <a class="tile" href="{{ $svc.plexWatch }}" target="_blank" rel="noopener">
-                    {{ partial "icon.html" "play" }}
-                    <h3 class="tile-title">Watch <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
-                    <p class="tile-desc">Already a member? Open the library and start something.</p>
-                </a>
+.eyebrow{
+  font-size:.68rem;text-transform:uppercase;letter-spacing:.26em;color:var(--accent);
+  display:flex;align-items:center;gap:12px;margin-bottom:22px;
+}
+.eyebrow::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,var(--accent),transparent);opacity:.45}
+h2{font-size:clamp(1.4rem,3.5vw,2.5rem);line-height:1.12;letter-spacing:-.012em;margin:0 0 16px;font-weight:700}
+p.lead{color:var(--dim);font-size:1.05rem;max-width:560px;margin:0}
 
-                <a class="tile" href="{{ $svc.seerr }}" target="_blank" rel="noopener">
-                    {{ partial "icon.html" "search" }}
-                    <h3 class="tile-title">Request <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
-                    <p class="tile-desc">If it isn't in the library, ask for it. Most requests land within a day.</p>
-                </a>
+/* --- chrome: progress bar + theme toggle -------------------------------- */
+#bar{position:fixed;top:0;left:0;height:2px;width:100%;transform:scaleX(0);transform-origin:0 50%;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:120}
 
-            </div>
+#theme{
+  position:fixed;top:20px;right:22px;z-index:120;width:38px;height:38px;border-radius:50%;
+  cursor:pointer;border:1px solid var(--line);background:color-mix(in srgb,var(--ink) 6%,transparent);
+  color:var(--ink);font-size:16px;display:grid;place-items:center;padding:0;
+  backdrop-filter:blur(12px);transition:transform .25s ease,border-color .25s ease;
+}
+#theme:hover{transform:rotate(-20deg) scale(1.08);border-color:var(--accent)}
 
-            {{/* Posts deliberately do NOT appear here — they live on /posts/.
-                 The status chip in the hero is the only pointer to them. */}}
+/* --- CRT scanlines -------------------------------------------------------
+   Sits UNDER the grain (z-index 109 vs 110) so the two textures stack instead
+   of one washing the other out. Deliberately faint: at full strength this
+   shimmers badly on an OLED at low brightness. 3px period rather than 2px
+   because a 2px period aliases into moire on a 2x display. */
+#scan{
+  position:fixed;inset:0;z-index:109;pointer-events:none;opacity:.28;
+  background:repeating-linear-gradient(to bottom,
+    rgba(0,0,0,0) 0 2px, rgba(0,0,0,.55) 2px 3px);
+}
+:root[data-theme="light"] #scan{opacity:.08}
 
-        </main>
+/* --- [8] film grain ------------------------------------------------------ */
+#grain{
+  position:fixed;inset:-120%;z-index:110;pointer-events:none;opacity:.14;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grainShift .7s steps(3) infinite;
+}
+:root[data-theme="light"] #grain{opacity:.07}
+@keyframes grainShift{
+  0%{transform:translate(0,0)}33%{transform:translate(-3%,2%)}66%{transform:translate(2%,-3%)}100%{transform:translate(0,0)}
+}
+
+/* =============== [1] HERO — line-mask reveal ============================= */
+.hero{
+  height:100svh;min-height:600px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+}
+.hero::before{
+  content:"";position:absolute;width:130vmax;height:130vmax;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,var(--glow),transparent 55%);
+  animation:drift 24s ease-in-out infinite alternate;
+}
+@keyframes drift{from{transform:translate(-16%,-12%) scale(.8)}to{transform:translate(14%,10%) scale(1.2)}}
+.hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.4;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:72px 72px;
+  mask-image:radial-gradient(ellipse 72% 58% at 50% 50%,#000 18%,transparent 78%);
+  -webkit-mask-image:radial-gradient(ellipse 72% 58% at 50% 50%,#000 18%,transparent 78%);
+}
+.hero-inner{position:relative;z-index:3;will-change:transform,opacity;padding:0 22px}
+
+.kicker{
+  font-size:.7rem;letter-spacing:.4em;text-transform:uppercase;color:var(--accent);
+  margin:0 0 26px;opacity:0;animation:fadeIn .8s ease .15s forwards;
+}
+/* [1] each line sits in an overflow:hidden box and slides up from beneath it.
+       Two nested elements is the whole trick. */
+.big{margin:0;font-weight:800;letter-spacing:-.02em;line-height:1.02;
+     font-size:clamp(1.9rem,6.7vw,6rem)}
+.big .line{display:block;overflow:hidden;padding-bottom:.04em}
+.big .line > span{display:block;transform:translateY(115%);animation:lineUp 1s cubic-bezier(.19,1,.22,1) forwards}
+.big .line:nth-child(1) > span{animation-delay:.30s}
+.big .line:nth-child(2) > span{animation-delay:.42s}
+.big .line:nth-child(3) > span{animation-delay:.54s}
+.big .line:nth-child(3) > span{color:transparent;-webkit-text-stroke:2px var(--accent)}
+@keyframes lineUp{to{transform:none}}
+@keyframes fadeIn{to{opacity:1}}
+
+.tagline{margin:26px 0 0;color:var(--dim);font-size:clamp(.82rem,2.1vw,1rem);letter-spacing:.05em;min-height:1.6em}
+.tagline .caret{display:inline-block;width:.6ch;background:var(--accent);color:transparent;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+
+.cue{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:3;
+  color:var(--dim);font-size:.64rem;letter-spacing:.28em;text-transform:uppercase;
+  opacity:0;animation:fadeIn .8s ease 2.3s forwards}
+.cue span{display:block;margin:9px auto 0;width:1px;height:36px;
+  background:linear-gradient(var(--accent),transparent);animation:cueDrop 1.9s ease-in-out infinite}
+@keyframes cueDrop{0%,100%{transform:scaleY(.35);opacity:.35}50%{transform:scaleY(1);opacity:1}}
+
+/* =============== [4] PARALLAX MARQUEE ==================================== */
+.marquees{padding:74px 0 88px;border-block:1px solid var(--line);background:var(--bg-2);overflow:hidden}
+/* [3] the SKEW lives here, not on the track. This element is wider than the
+   viewport and the section clips it, so a skewed edge never becomes visible.
+   Skewing the track itself is what tore the wrap seam open. */
+.mq-band{width:118%;margin-left:-9%;will-change:transform;transform-origin:50% 50%}
+.mq{overflow:hidden;white-space:nowrap;padding:3px 0}
+.mq-track{display:inline-flex;will-change:transform;backface-visibility:hidden}
+.mq-content{font-size:clamp(1.6rem,5.6vw,4.2rem);font-weight:800;letter-spacing:-.015em;padding-right:.4em}
+.mq.outline .mq-content{color:transparent;-webkit-text-stroke:1px var(--dim);opacity:.5}
+.mq.solid   .mq-content{color:var(--ink)}
+.mq.accent  .mq-content{color:var(--accent)}
+.mq.grad    .mq-content{background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.mq .dot{color:var(--accent);padding:0 .18em}
+
+/* =============== [5] WORD ILLUMINATION =================================== */
+.illum{padding:150px 0 140px}
+.illum p{
+  font-size:clamp(1rem,2.9vw,2rem);font-weight:600;line-height:1.45;
+  letter-spacing:-.01em;max-width:940px;margin:34px 0 0;
+}
+.illum .w{transition:opacity .12s linear;opacity:.14}
+.illum .w.hi{color:var(--accent)}
+
+/* =============== [9] PINNED PANEL SCRUB ================================== */
+.pin-outer{height:320vh;position:relative}
+.pin-inner{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.panel{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:0 28px;opacity:0;transform:translateY(28px);
+  transition:opacity .55s ease,transform .55s cubic-bezier(.19,1,.22,1)}
+.panel.on{opacity:1;transform:none}
+.panel .num{font-size:clamp(5rem,22vw,15rem);font-weight:800;line-height:.8;letter-spacing:-.05em;
+  color:transparent;-webkit-text-stroke:1.5px var(--accent);opacity:.26;margin-bottom:-.14em}
+.panel h3{font-size:clamp(1.5rem,4.7vw,3rem);margin:0 0 14px;letter-spacing:-.015em;font-weight:700}
+.panel p{color:var(--dim);max-width:420px;margin:0;font-size:1rem}
+.pin-rail{position:absolute;bottom:44px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:3}
+.pin-rail i{display:block;width:36px;height:2px;background:var(--line);overflow:hidden}
+.pin-rail i b{display:block;height:100%;width:0;background:var(--accent)}
+
+/* =============== [6] PINNED HORIZONTAL SCROLL ============================ */
+.hs-outer{height:340vh;position:relative;background:var(--bg-2);border-block:1px solid var(--line)}
+.hs-inner{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.hs-head{padding:0 28px;max-width:1100px;margin:0 auto 40px;width:100%}
+.hs-track{display:flex;gap:20px;padding:0 28px;will-change:transform}
+.tile{
+  flex:0 0 clamp(210px,27vw,310px);height:clamp(300px,46vh,430px);border-radius:20px;
+  border:1px solid var(--line);background:var(--card);position:relative;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end;padding:26px;
+  transition:border-color .3s ease;
+}
+.tile:hover{border-color:var(--accent)}
+/* poster art sits behind everything, 2x2 like a Plex category rail */
+.tile-art{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.tile-art img{width:100%;height:100%;object-fit:cover;display:block;
+  filter:saturate(.88) brightness(.92);transition:transform .6s cubic-bezier(.19,1,.22,1)}
+.tile-art img.real{filter:saturate(1) brightness(.96)}
+.tile:hover .tile-art img{transform:scale(1.06)}
+/* scrim so the label stays readable over the art */
+.tile::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(to top,var(--bg) 4%,color-mix(in srgb,var(--bg) 72%,transparent) 34%,transparent 68%),
+             linear-gradient(160deg,var(--glow),transparent 55%)}
+.tile .idx{position:absolute;top:22px;left:26px;font-size:.68rem;letter-spacing:.2em;color:var(--accent);z-index:2}
+.tile h4{margin:0;font-size:clamp(1rem,1.9vw,1.4rem);letter-spacing:-.01em;position:relative;z-index:2}
+.tile small{color:var(--dim);font-size:.85rem;position:relative;z-index:2;margin-top:6px}
+
+/* =============== [7] MAGNETIC BUTTONS =================================== */
+.actions{padding:150px 0 40px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:52px}
+.act{
+  position:relative;display:block;padding:34px 28px 28px;border-radius:20px;
+  background:var(--card);border:1px solid var(--line);overflow:hidden;
+  opacity:0;transform:translateY(36px);
+  transition:opacity .8s ease,transform .8s cubic-bezier(.19,1,.22,1),border-color .3s ease;
+}
+.act.on{opacity:1;transform:none}
+.act:hover{border-color:var(--accent)}
+.act::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .35s ease;pointer-events:none;
+  background:radial-gradient(340px circle at var(--mx,50%) var(--my,50%),var(--glow),transparent 65%)}
+.act:hover::before{opacity:1}
+/* [7] the magnet moves this inner wrapper so it never fights the reveal transform */
+.act .mag{display:block;position:relative;transition:transform .35s cubic-bezier(.19,1,.22,1)}
+.act .ico{display:block;margin-bottom:18px;color:var(--accent)}
+.act .ico svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.act h4{margin:0 0 8px;font-size:1.05rem;letter-spacing:-.006em}
+.act p{margin:0;color:var(--dim);font-size:.92rem}
+.act .go{margin-top:22px;display:inline-flex;align-items:center;gap:8px;
+  font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.act .go em{font-style:normal;transition:transform .3s cubic-bezier(.19,1,.22,1)}
+.act:hover .go em{transform:translateX(7px)}
+
+/* =============== SOCIALS + FOOTER ======================================= */
+.socials{padding:110px 0 60px}
+.slist{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+.slink{display:inline-flex;align-items:center;gap:9px;padding:11px 18px;border-radius:999px;
+  border:1px solid var(--line);font-size:.88rem;color:var(--dim);
+  transition:color .25s ease,border-color .25s ease,transform .25s cubic-bezier(.19,1,.22,1)}
+.slink:hover{color:var(--ink);border-color:var(--accent);transform:translateY(-3px)}
+.slink b{font-weight:600;color:var(--ink)}
+footer{padding:80px 0 110px;border-top:1px solid var(--line);margin-top:70px;
+  color:var(--dim);font-size:.85rem;text-align:center}
+footer .beep{color:var(--accent);letter-spacing:.24em;font-size:.7rem;margin-bottom:14px}
+footer .latest{margin-bottom:18px}
+footer .latest a{color:var(--accent);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase}
+footer .latest a:hover{text-decoration:underline;text-underline-offset:4px}
+footer .latest em{font-style:normal;display:inline-block;transition:transform .3s cubic-bezier(.19,1,.22,1)}
+footer .latest a:hover em{transform:translateX(6px)}
+footer .credit{margin-top:18px;font-size:.72rem;opacity:.6;max-width:420px;margin-inline:auto}
+footer .credit a{color:var(--accent)}
+
+/* =============== reduced motion ========================================= */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .big .line > span,.kicker,.cue,.act,.panel{opacity:1!important;transform:none!important}
+  .illum .w{opacity:1!important}
+  #grain,#scan{display:none}
+  .pin-outer,.hs-outer{height:auto}
+  .pin-inner,.hs-inner{position:static;height:auto;display:block;padding:60px 0}
+  .panel{position:static;opacity:1;transform:none;padding:44px 28px}
+  .hs-track{flex-wrap:wrap;justify-content:center}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<div id="bar"></div>
+<div id="scan"></div>
+<div id="grain"></div>
+<button id="theme" aria-label="Toggle theme">☀</button>
+
+<!-- ============ [1] HERO ============ -->
+<header class="hero">
+  <div class="hero-inner">
+    <p class="kicker mono">{{ .Site.Params.author.intro | default .Site.Title }}</p>
+    <h1 class="big">
+      <span class="line"><span>WELCOME</span></span>
+      <span class="line"><span>TO MY</span></span>
+      <span class="line"><span>SITE</span></span>
+    </h1>
+    <p class="tagline mono" data-type="{{ .Site.Params.author.tagline }}"></p>
+  </div>
+  <div class="cue">Scroll<span></span></div>
+</header>
+
+<!-- ============ [4] MARQUEE ============ -->
+<section class="marquees" aria-hidden="true">
+ <div class="mq-band">
+  <div class="mq outline" data-speed="0.55" data-dir="1"  data-auto="0.22"><div class="mq-track"><div class="mq-content">PLEX <span class="dot">/</span> SERVER <span class="dot">/</span> </div></div></div>
+  <div class="mq solid"   data-speed="1.05" data-dir="-1" data-auto="0.14"><div class="mq-track"><div class="mq-content">beep boop <span class="dot">*</span> </div></div></div>
+  <div class="mq grad"    data-speed="0.7"  data-dir="1"  data-auto="0.30"><div class="mq-track"><div class="mq-content">STREAM <span class="dot">/</span> REQUEST <span class="dot">/</span> WATCH <span class="dot">/</span> </div></div></div>
+  <div class="mq outline" data-speed="1.4"  data-dir="-1" data-auto="0.10"><div class="mq-track"><div class="mq-content">AYYNASH.NET <span class="dot">/</span> </div></div></div>
+ </div>
+</section>
+
+<!-- ============ [5] WORD ILLUMINATION ============ -->
+<section class="illum wrap">
+  <div class="eyebrow">What this is</div>
+  <p data-illum>There is no blog here, no newsletter, no startup. Just a server in my house that holds a lot of movies, and three links that get you to it.</p>
+</section>
+
+<!-- ============ [10] PINNED PANELS ============ -->
+<section class="pin-outer" id="pin">
+  <div class="pin-inner">
+    <article class="panel"><div class="num mono">01</div><h3>Join</h3><p>Got an invite code? Redeem it and you're on the server in about thirty seconds.</p></article>
+    <article class="panel"><div class="num mono">02</div><h3>Watch</h3><p>Already in? Jump straight to the library. Movies, shows, the whole shelf.</p></article>
+    <article class="panel"><div class="num mono">03</div><h3>Request</h3><p>Missing something? Ask for it and it usually lands within a day.</p></article>
+    <div class="pin-rail"><i><b></b></i><i><b></b></i><i><b></b></i></div>
+  </div>
+</section>
+
+<!-- ============ [6] HORIZONTAL SCROLL ============ -->
+<section class="hs-outer" id="hs">
+  <div class="hs-inner">
+    <div class="hs-head">
+      <div class="eyebrow">On the server</div>
+      <h2>Keep scrolling. It goes sideways.</h2>
     </div>
+    <div class="hs-track">
+      <article class="tile" data-titles="Dune|Oppenheimer|Interstellar|The Batman">
+        <div class="tile-art"></div>
+        <span class="idx mono">01</span><h4>Movies</h4><small>New releases land fast</small>
+      </article>
+      <article class="tile" data-titles="Severance|The Bear|Succession|Andor">
+        <div class="tile-art"></div>
+        <span class="idx mono">02</span><h4>TV &amp; Shows</h4><small>Auto-grabs new episodes</small>
+      </article>
+      <article class="tile" data-titles="Blade Runner 2049|Top Gun Maverick|Avatar|1917">
+        <div class="tile-art"></div>
+        <span class="idx mono">03</span><h4>4K HDR</h4><small>If your setup can take it</small>
+      </article>
+      <article class="tile" data-titles="Frieren|Jujutsu Kaisen|Spy x Family|Cowboy Bebop">
+        <div class="tile-art"></div>
+        <span class="idx mono">04</span><h4>Anime</h4><small>Subbed and dubbed</small>
+      </article>
+      <article class="tile" data-titles="Planet Earth|Free Solo|14 Peaks|The Last Dance">
+        <div class="tile-art"></div>
+        <span class="idx mono">05</span><h4>Documentaries</h4><small>For the 2am rabbit holes</small>
+      </article>
+      <article class="tile" data-titles="Bluey|Encanto|Toy Story|Paddington">
+        <div class="tile-art"></div>
+        <span class="idx mono">06</span><h4>Kids</h4><small>Separate profile, no surprises</small>
+      </article>
+      <article class="tile" data-titles="Stop Making Sense|Get Back|Amy|Summer of Soul">
+        <div class="tile-art"></div>
+        <span class="idx mono">07</span><h4>Music</h4><small>Plexamp, if you ask nicely</small>
+      </article>
+      <article class="tile" data-titles="Nanette|Sticks &amp; Stones|Inside|Tamborine">
+        <div class="tile-art"></div>
+        <span class="idx mono">08</span><h4>Stand-up</h4><small>Specials, mostly recent</small>
+      </article>
+      <article class="tile" data-titles="Casablanca|Rear Window|12 Angry Men|Vertigo">
+        <div class="tile-art"></div>
+        <span class="idx mono">09</span><h4>The Old Stuff</h4><small>Pre-1980, surprisingly deep</small>
+      </article>
+    </div>
+  </div>
+</section>
 
-    {{- partial "footer.html" . -}}
-    {{- partial "scriptsBodyEnd.html" . -}}
+<!-- ============ [7] BUTTONS ============ -->
+<section class="actions wrap" id="go">
+  <div class="eyebrow">Three doors</div>
+  <h2>Pick one.</h2>
+  <p class="lead">Everything below points somewhere real. No detours.</p>
+  <div class="grid">
+    {{/* /join/ is the page that explains Plex and hands the code to Wizarr. */}}
+    <a class="act" href="{{ "/join/" | relURL }}"><span class="mag">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M3 8.5A2.5 2.5 0 0 0 5.5 6h13A2.5 2.5 0 0 0 21 8.5v2a1.5 1.5 0 0 0 0 3v2A2.5 2.5 0 0 0 18.5 18h-13A2.5 2.5 0 0 0 3 15.5v-2a1.5 1.5 0 0 0 0-3z"/><path d="M9 6v12" stroke-dasharray="2 3"/></svg></span>
+      <h4>Join the server</h4><p>Redeem an invite code and get added to the Plex library.</p>
+      <span class="go">Redeem <em>&rarr;</em></span></span></a>
+
+    <a class="act" href="{{ $svc.plexWatch }}" target="_blank" rel="noopener"><span class="mag">
+      <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z"/></svg></span>
+      <h4>Open Plex</h4><p>Shortcut straight into the app. Already a member? Start here.</p>
+      <span class="go">Watch <em>&rarr;</em></span></span></a>
+
+    <a class="act" href="{{ $svc.seerr }}" target="_blank" rel="noopener"><span class="mag">
+      <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
+      <h4>Request something</h4><p>Send a title through Seerr and I'll get it queued up.</p>
+      <span class="go">Request <em>&rarr;</em></span></span></a>
+  </div>
+</section>
+
+<!-- ============ SOCIALS ============ -->
+<section class="socials wrap">
+  <div class="eyebrow">Elsewhere</div>
+  <h2>Find me around.</h2>
+  <div class="slist">
+    {{/* Driven by [[params.socialIcons]] — add one there and it shows up here.
+         The handle is just the URL path, which is what every one of these
+         services puts the username in. */}}
+    {{- $pretty := dict "github" "GitHub" "instagram" "Instagram" "x" "X" "youtube" "YouTube" "discord" "Discord" -}}
+    {{- range .Site.Params.socialIcons }}
+    {{- $handle := strings.TrimPrefix "/" (urls.Parse .url).Path }}
+    <a class="slink" href="{{ .url }}" target="_blank" rel="noopener"{{ if eq .name "discord" }} id="discord"{{ end }}>{{ index $pretty .name | default (title .name) }} <b>{{ $handle }}</b></a>
+    {{- end }}
+  </div>
+</section>
+
+<footer>
+  <div class="beep mono">BEEP BOOP</div>
+  {{/* The only pointer to /posts/ on this page, so it names the newest post
+       when there is one. `range first 1` is a no-op on an empty list rather
+       than an out-of-range build error. */}}
+  <div class="latest">
+    {{- $posts := (where .Site.RegularPages "Type" "in" .Site.Params.mainSections).ByDate.Reverse -}}
+    {{- if $posts }}{{ range first 1 $posts }}
+    <a href="{{ "/posts/" | relURL }}">Latest update — {{ .Title }} <em>&rarr;</em></a>
+    {{ end }}{{ else }}
+    <a href="{{ "/posts/" | relURL }}">Server updates <em>&rarr;</em></a>
+    {{ end -}}
+  </div>
+  &copy; {{ now.Year }} {{ .Site.Params.author.name | default .Site.Title }}
+  <div id="tmdb-credit" class="credit" hidden>
+    Artwork from <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>.
+    This product uses the TMDB API but is not endorsed or certified by TMDB.
+  </div>
+</footer>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   POSTER ARTWORK — paste your TMDB API key here and the placeholder art is
+   replaced with the real posters. Leave it empty and the page falls back to
+   the generated artwork; nothing breaks either way.
+
+   Get a free key: themoviedb.org -> Settings -> API -> API Read Access /
+   API Key (v3 auth). If you already run Seerr, it is using one of these.
+   ========================================================================= */
+const TMDB_KEY  = "{{ .Site.Params.tmdbKey }}";   // set tmdbKey in hugo.toml
+const TMDB_SIZE = "w342";  // w185 | w342 | w500 | original
+
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp  = (a,b,n)=>a+(b-a)*n;
+
+/* ------------------------------------------------------------------------
+   PLACEHOLDER POSTER ART
+   Each poster is an SVG built on the fly and set as an <img src> data URI, so
+   swapping in real artwork later is a one-attribute change per image.
+   Colour is derived from a hash of the title, which keeps it stable across
+   reloads while still giving every poster its own look.
+------------------------------------------------------------------------ */
+(function posters(){
+  const hash = str => { let h = 2166136261;
+    for (let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return Math.abs(h); };
+
+  function poster(title){
+    const h  = hash(title);
+    const h1 = h % 360, h2 = (h1 + 40 + (h >> 7) % 90) % 360;
+    const c1 = "hsl(" + h1 + ",58%,26%)", c2 = "hsl(" + h2 + ",64%,12%)";
+    const c3 = "hsl(" + h1 + ",70%,58%)";
+    const cx = 20 + (h >> 3) % 60, cy = 18 + (h >> 5) % 40, r = 22 + (h >> 9) % 26;
+    const ang = (h >> 11) % 180;
+    const words = title.split(" ");
+    const lines = words.length > 2
+      ? [words.slice(0, Math.ceil(words.length/2)).join(" "), words.slice(Math.ceil(words.length/2)).join(" ")]
+      : words;
+    const text = lines.map((l,i)=>
+      '<text x="14" y="' + (168 + i*15) + '" font-family="Helvetica,Arial,sans-serif" ' +
+      'font-size="12" font-weight="700" fill="#fff" opacity="0.94">' +
+      l.replace(/&/g,"&amp;").replace(/</g,"&lt;") + '</text>').join("");
+
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="200" viewBox="0 0 140 200">' +
+      '<defs><linearGradient id="g" gradientTransform="rotate(' + ang + ')">' +
+      '<stop offset="0" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></linearGradient>' +
+      '<radialGradient id="o"><stop offset="0" stop-color="' + c3 + '" stop-opacity="0.55"/>' +
+      '<stop offset="1" stop-color="' + c3 + '" stop-opacity="0"/></radialGradient></defs>' +
+      '<rect width="140" height="200" fill="url(#g)"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="url(#o)"/>' +
+      '<circle cx="' + (140-cx) + '" cy="' + (150-cy) + '" r="' + (r*0.7) + '" fill="url(#o)" opacity="0.7"/>' +
+      '<rect y="130" width="140" height="70" fill="#000" opacity="0.42"/>' +
+      '<rect x="14" y="150" width="18" height="2" fill="' + c3 + '"/>' +
+      text + '</svg>';
+    return "data:image/svg+xml," + encodeURIComponent(svg);
+  }
+
+  document.querySelectorAll(".tile").forEach(tile=>{
+    const art = tile.querySelector(".tile-art");
+    tile.dataset.titles.split("|").forEach(title=>{
+      const img = document.createElement("img");
+      img.src = poster(title.trim());
+      img.dataset.title = title.trim();
+      img.dataset.fallback = img.src;   // reverted to if a real poster 404s
+      img.alt = title.trim() + " poster";
+      img.addEventListener("error", ()=>{ img.src = img.dataset.fallback; });
+      art.appendChild(img);
+    });
+  });
+})();
+
+/* ------------------------------------------------------------------------
+   Upgrade the generated placeholders to real TMDB artwork.
+   Every image already has a working src, so this only ever improves the page
+   -- a missing key, a rate limit, a network failure or a bad match all just
+   leave the generated poster in place.
+
+   search/multi covers films and TV in one endpoint, which matters here
+   because the tiles mix both. Results are preloaded before being swapped in
+   so a poster never pops in half-drawn.
+------------------------------------------------------------------------ */
+(async function tmdb(){
+  if (!TMDB_KEY) return;
+  const imgs = [...document.querySelectorAll(".tile-art img")];
+  const seen = new Map();   // in-memory only: same title looked up once
+
+  for (const img of imgs){
+    const q = img.dataset.title;
+    try{
+      if (!seen.has(q)){
+        const url = "https://api.themoviedb.org/3/search/multi?include_adult=false"
+                  + "&api_key=" + encodeURIComponent(TMDB_KEY)
+                  + "&query="   + encodeURIComponent(q);
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("TMDB " + res.status);
+        const json = await res.json();
+        const hit  = (json.results || []).find(r => r.poster_path);
+        seen.set(q, hit ? hit.poster_path : null);
+      }
+      const path = seen.get(q);
+      if (!path) continue;
+
+      const src = "https://image.tmdb.org/t/p/" + TMDB_SIZE + path;
+      await new Promise(done=>{
+        const pre = new Image();
+        pre.onload  = ()=>{ img.src = src; img.classList.add("real"); done(); };
+        pre.onerror = done;
+        pre.src = src;
+      });
+    }catch(err){
+      /* generated poster stays; log once so it is debuggable */
+      if (!window.__tmdbWarned){ console.warn("TMDB lookup failed:", err.message); window.__tmdbWarned = 1; }
+    }
+  }
+
+  const credit = document.getElementById("tmdb-credit");
+  if (credit && document.querySelector(".tile-art img.real")) credit.hidden = false;
+})();
+
+/* ------------------------------------------------------------------ [1]
+   Typewriter for the tagline (hero lines are pure CSS — see .big .line).
+------------------------------------------------------------------------ */
+(function typer(){
+  const el = document.querySelector(".tagline"), text = el.dataset.type;
+  if (reduced){ el.textContent = text; return; }
+  let i = 0; const caret = '<span class="caret">|</span>';
+  el.innerHTML = caret;
+  setTimeout(function step(){
+    el.innerHTML = text.slice(0,++i) + caret;
+    if (i < text.length) setTimeout(step, 40);
+  }, 1500);
+})();
+
+/* ------------------------------------------------------------------ [5]
+   Split the statement into word spans so each can be lit individually.
+------------------------------------------------------------------------ */
+const illumEl = document.querySelector("[data-illum]");
+const words = (function(){
+  const src = illumEl.textContent.trim().split(/\s+/);
+  illumEl.innerHTML = "";
+  return src.map(w=>{
+    const s = document.createElement("span");
+    s.className = "w"; s.textContent = w + " ";
+    illumEl.appendChild(s); return s;
+  });
+})();
+
+/* ------------------------------------------------------------------ [4]
+   Marquee rows: clone until the row is twice the viewport, then translate
+   modulo one copy's width so the loop is seamless.
+------------------------------------------------------------------------ */
+let marquees = [];
+function buildMarquees(){
+  marquees = [...document.querySelectorAll(".mq")].map(el=>{
+    const track = el.querySelector(".mq-track");
+    while (track.children.length > 1) track.removeChild(track.lastElementChild);
+    const content = track.firstElementChild;
+    const unit = content.getBoundingClientRect().width;
+    // cover the viewport twice over PLUS two spare copies, so the right edge can
+    // never run dry no matter where the modulo wrap lands
+    const need = Math.ceil((innerWidth * 2) / unit) + 3;
+    for (let i=1;i<need;i++) track.appendChild(content.cloneNode(true));
+    return {el, track, unit,
+      speed:parseFloat(el.dataset.speed), dir:parseInt(el.dataset.dir,10), auto:parseFloat(el.dataset.auto)};
+  });
+}
+buildMarquees();
+
+/* ------------------------------------------------------------------------
+   ONE rAF loop drives everything scroll-linked.
+   [2] `eased` chases the real scroll position instead of matching it. That
+       one line of lerp is the difference between "fine" and "expensive".
+   [3] `vel` is the gap between them — i.e. how hard you're scrolling — which
+       gets fed into a small skew. This is the classic awwwards flourish.
+------------------------------------------------------------------------ */
+const bar = document.getElementById("bar");
+const heroInner = document.querySelector(".hero-inner");
+const pin = document.getElementById("pin");
+const panels = [...document.querySelectorAll(".panel")];
+const rails  = [...document.querySelectorAll(".pin-rail b")];
+const hs = document.getElementById("hs");
+const hsTrack = document.querySelector(".hs-track");
+
+/* Dial the whole motion system up or down from here. 1 = as shipped,
+   0.5 = half as lively, 0 = effectively still. */
+const INTENSITY = 0.65;
+const mqBand = document.querySelector(".mq-band");
+let eased = window.scrollY, vel = 0, skew = 0, t0 = performance.now();
+
+function frame(now){
+  const y = scrollY, vh = innerHeight, t = (now - t0)/1000;
+
+  /* [2] eased driver + [3] velocity */
+  eased = lerp(eased, y, 0.12);
+  vel   = lerp(vel, y - eased, 0.18);
+
+  const docH = document.documentElement.scrollHeight - vh;
+  bar.style.transform = "scaleX(" + (docH>0 ? y/docH : 0) + ")";
+
+  if (!reduced){
+    /* hero lifts + dissolves, driven by the EASED value so it trails you */
+    const p = clamp(eased/vh, 0, 1);
+    heroInner.style.transform = "translateY(" + (p*-100) + "px) scale(" + (1-p*.09) + ")";
+    heroInner.style.opacity = String(1 - p*1.3);
+
+    /* [3] skew the marquee band by scroll velocity, clamped so it stays classy */
+    skew = lerp(skew, clamp(vel*0.035, -2, 2) * INTENSITY, 0.09);
+
+    /* [4] marquee rows */
+    marquees.forEach(m=>{
+      const x = (eased * m.speed) + (t * m.auto * 60);
+      const mod = ((x % m.unit) + m.unit) % m.unit;
+      // Math.round: a fractional translate leaves hairline gaps between clones
+      // that read as flicker when the row is moving fast.
+      const tx = Math.round(m.dir===1 ? -mod : mod-m.unit);
+      m.track.style.transform = "translateX(" + tx + "px)";
+    });
+    mqBand.style.transform = "skewY(" + skew.toFixed(3) + "deg)";
+
+    /* [5] word illumination — each word lights as the reading line passes it */
+    const ir = illumEl.getBoundingClientRect();
+    const ip = clamp((vh*0.85 - ir.top) / (vh*0.55 + ir.height*0.5), 0, 1);
+    const n = words.length;
+    words.forEach((w,i)=>{
+      const local = clamp((ip - i/n) * n * 1.4, 0, 1);
+      w.style.opacity = String(0.14 + local*0.86);
+      w.classList.toggle("hi", local > 0 && local < 0.6);
+    });
+
+    /* [9] pinned panel scrub */
+    const r = pin.getBoundingClientRect();
+    const prog = clamp(-r.top / (r.height - vh), 0, 1);
+    const seg = 1/panels.length;
+    const idx = clamp(Math.floor(prog/seg), 0, panels.length-1);
+    panels.forEach((el,i)=> el.classList.toggle("on", i===idx));
+    rails.forEach((b,i)=> b.style.width = (clamp((prog - i*seg)/seg, 0, 1) * 100) + "%");
+
+    /* [6] horizontal scroll — map vertical progress onto how far the track
+           still has to travel. Uses the eased value so it glides. */
+    const hr = hs.getBoundingClientRect();
+    const hp = clamp(-hr.top / (hr.height - vh), 0, 1);
+    const travel = hsTrack.scrollWidth - innerWidth + 56;
+    hsTrack.style.transform = "translateX(" + (-hp * Math.max(travel,0)) + "px)";
+  }
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ------------------------------------------------------------------ [7]
+   Reveal on entry + magnetic hover. The magnet moves an inner wrapper so it
+   never collides with the reveal transform on the card itself.
+------------------------------------------------------------------------ */
+(function buttons(){
+  const io = new IntersectionObserver(es=>es.forEach(e=>{
+    if (e.isIntersecting){ e.target.classList.add("on"); io.unobserve(e.target); }
+  }),{threshold:.2});
+
+  document.querySelectorAll(".act").forEach((el,i)=>{
+    el.style.transitionDelay = (i*0.11)+"s";
+    io.observe(el);
+    const mag = el.querySelector(".mag");
+    el.addEventListener("pointermove", ev=>{
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx",(ev.clientX-r.left)+"px");
+      el.style.setProperty("--my",(ev.clientY-r.top)+"px");
+      if (reduced) return;
+      const dx = ev.clientX - (r.left + r.width/2);
+      const dy = ev.clientY - (r.top + r.height/2);
+      mag.style.transform = "translate(" + dx*0.09 + "px," + dy*0.12 + "px)";
+    });
+    el.addEventListener("pointerleave", ()=> mag.style.transform = "");
+  });
+})();
+
+/* --- theme toggle -------------------------------------------------------- */
+(function theme(){
+  const root = document.documentElement, btn = document.getElementById("theme");
+  if (matchMedia("(prefers-color-scheme: light)").matches) root.dataset.theme = "light";
+  const paint = ()=> btn.textContent = root.dataset.theme === "dark" ? "☀" : "☾";
+  paint();
+  btn.addEventListener("click", ()=>{
+    root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark"; paint();
+  });
+})();
+
+/* --- discord: the link opens the server invite, right-click-free shortcut is
+       a long-press/secondary click that copies the handle instead ----------- */
+document.getElementById("discord")?.addEventListener("contextmenu", e=>{
+  e.preventDefault();
+  const b = e.currentTarget.querySelector("b");
+  navigator.clipboard?.writeText("ayynash");
+  const old = b.textContent; b.textContent = "copied!";
+  setTimeout(()=> b.textContent = old, 1400);
+});
+
+/* --- rebuild marquees only on genuine width changes ---------------------- */
+let rz, lastW = innerWidth;
+addEventListener("resize", ()=>{
+  if (innerWidth === lastW) return;
+  lastW = innerWidth; clearTimeout(rz); rz = setTimeout(buildMarquees, 250);
+});
+</script>
 </body>
-
 </html>
