@@ -19,6 +19,69 @@
 {{- $svc := .Site.Params.services -}}
 {{- $desc := .Site.Params.description -}}
 {{- $pageTitle := printf "Welcome to my site — %s" .Site.Title -}}
+{{/* ---------------------------------------------------------------------
+     POSTER ARTWORK — resolved at BUILD time, not in the visitor's browser.
+
+     Hugo looks each title up once while building and bakes the image URL
+     into the HTML. So the key never reaches the browser, visitors make zero
+     requests to TMDB, the art is there on first paint, and an ad blocker or
+     a Pi-hole on the viewer's network can't strip it.
+
+     The key must NEVER be committed — this repo is public. Pass it as an
+     environment variable; Hugo maps HUGO_PARAMS_* onto .Site.Params:
+
+       local:            HUGO_PARAMS_TMDBKEY=<v3 key> hugo server
+       Cloudflare Pages: Settings -> Variables and Secrets ->
+                         HUGO_PARAMS_TMDBKEY = <v3 key>
+
+     With no key set every tile falls back to the generated placeholder art
+     and the page is otherwise identical — a build never fails over this.
+     --------------------------------------------------------------------- */}}
+{{- $size  := .Site.Params.tmdbSize | default "w342" -}}
+{{- $key   := .Site.Params.tmdbKey -}}
+{{- $rails := slice
+  (dict "idx" "01"   "name" "Movies"           "note" "New releases land fast"          "titles" (slice "Dune" "Oppenheimer" "Interstellar" "The Batman"))
+  (dict "idx" "02"   "name" "TV & Shows"       "note" "Auto-grabs new episodes"         "titles" (slice "Severance" "The Bear" "Succession" "Andor"))
+  (dict "idx" "03"   "name" "4K HDR"           "note" "If your setup can take it"       "titles" (slice "Blade Runner 2049" "Top Gun Maverick" "Avatar" "1917"))
+  (dict "idx" "04"   "name" "Anime"            "note" "Subbed and dubbed"               "titles" (slice "Frieren" "Jujutsu Kaisen" "Spy x Family" "Cowboy Bebop"))
+  (dict "idx" "05"   "name" "Documentaries"    "note" "For the 2am rabbit holes"        "titles" (slice "Planet Earth" "Free Solo" "14 Peaks" "The Last Dance"))
+  (dict "idx" "06"   "name" "Kids"             "note" "Separate profile, no surprises"  "titles" (slice "Bluey" "Encanto" "Toy Story" "Paddington"))
+  (dict "idx" "07"   "name" "Music"            "note" "Plexamp, if you ask nicely"      "titles" (slice "Stop Making Sense" "Get Back" "Amy" "Summer of Soul"))
+  (dict "idx" "08"   "name" "Stand-up"         "note" "Specials, mostly recent"         "titles" (slice "Nanette" "Sticks & Stones" "Inside" "Tamborine"))
+  (dict "idx" "09"   "name" "The Old Stuff"    "note" "Pre-1980, surprisingly deep"     "titles" (slice "Casablanca" "Rear Window" "12 Angry Men" "Vertigo")) -}}
+
+{{- $posters := dict -}}
+{{- with $key -}}
+  {{- $k := . -}}
+  {{- range $rail := $rails -}}
+    {{- range $t := $rail.titles -}}
+      {{- if not (isset $posters $t) -}}
+        {{- $path := "" -}}
+        {{/* search/multi covers films and TV in one call, which matters
+             because the rails mix both. */}}
+        {{- $u := printf "https://api.themoviedb.org/3/search/multi?include_adult=false&api_key=%s&query=%s" $k (urlquery $t) -}}
+        {{- $r := try (resources.GetRemote $u) -}}
+        {{- if $r.Err -}}
+          {{- warnf "TMDB lookup failed for %q: %s" $t $r.Err -}}
+        {{- else -}}
+          {{/* `else with` is only legal after `with`, not after `if` */}}
+          {{- with $r.Value -}}
+            {{- with transform.Unmarshal . -}}
+              {{- range .results -}}
+                {{- if and (eq $path "") .poster_path -}}{{- $path = .poster_path -}}{{- end -}}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+        {{- if eq $path "" -}}{{- warnf "TMDB: no poster found for %q" $t -}}{{- end -}}
+        {{- $posters = merge $posters (dict $t $path) -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $hasReal := false -}}
+{{- range $t, $path := $posters -}}{{- if $path -}}{{- $hasReal = true -}}{{- end -}}{{- end -}}
+
 {{ partial "v2-head.html" (dict "page" . "title" $pageTitle "desc" $desc) }}
 <style>
 /* =============== [1] HERO — line-mask reveal ============================= */
@@ -209,42 +272,23 @@
       <h2>Keep scrolling. It goes sideways.</h2>
     </div>
     <div class="hs-track">
-      <article class="tile" data-titles="Dune|Oppenheimer|Interstellar|The Batman">
-        <div class="tile-art"></div>
-        <span class="idx mono">01</span><h4>Movies</h4><small>New releases land fast</small>
+      {{ range $rails }}
+      <article class="tile">
+        {{/* 2x2 of poster art behind the label, like a Plex category rail */}}
+        <div class="tile-art">
+          {{- range $t := .titles }}
+          {{- $path := index $posters $t }}
+          {{- if $path }}
+          <img class="real" src="{{ printf "https://image.tmdb.org/t/p/%s%s" $size $path }}" data-title="{{ $t }}" alt="{{ $t }} poster" decoding="async">
+          {{- else }}
+          {{/* no src: the script below fills in generated art for this one */}}
+          <img data-title="{{ $t }}" alt="{{ $t }} poster" decoding="async">
+          {{- end }}
+          {{- end }}
+        </div>
+        <span class="idx mono">{{ .idx }}</span><h4>{{ .name }}</h4><small>{{ .note }}</small>
       </article>
-      <article class="tile" data-titles="Severance|The Bear|Succession|Andor">
-        <div class="tile-art"></div>
-        <span class="idx mono">02</span><h4>TV &amp; Shows</h4><small>Auto-grabs new episodes</small>
-      </article>
-      <article class="tile" data-titles="Blade Runner 2049|Top Gun Maverick|Avatar|1917">
-        <div class="tile-art"></div>
-        <span class="idx mono">03</span><h4>4K HDR</h4><small>If your setup can take it</small>
-      </article>
-      <article class="tile" data-titles="Frieren|Jujutsu Kaisen|Spy x Family|Cowboy Bebop">
-        <div class="tile-art"></div>
-        <span class="idx mono">04</span><h4>Anime</h4><small>Subbed and dubbed</small>
-      </article>
-      <article class="tile" data-titles="Planet Earth|Free Solo|14 Peaks|The Last Dance">
-        <div class="tile-art"></div>
-        <span class="idx mono">05</span><h4>Documentaries</h4><small>For the 2am rabbit holes</small>
-      </article>
-      <article class="tile" data-titles="Bluey|Encanto|Toy Story|Paddington">
-        <div class="tile-art"></div>
-        <span class="idx mono">06</span><h4>Kids</h4><small>Separate profile, no surprises</small>
-      </article>
-      <article class="tile" data-titles="Stop Making Sense|Get Back|Amy|Summer of Soul">
-        <div class="tile-art"></div>
-        <span class="idx mono">07</span><h4>Music</h4><small>Plexamp, if you ask nicely</small>
-      </article>
-      <article class="tile" data-titles="Nanette|Sticks &amp; Stones|Inside|Tamborine">
-        <div class="tile-art"></div>
-        <span class="idx mono">08</span><h4>Stand-up</h4><small>Specials, mostly recent</small>
-      </article>
-      <article class="tile" data-titles="Casablanca|Rear Window|12 Angry Men|Vertigo">
-        <div class="tile-art"></div>
-        <span class="idx mono">09</span><h4>The Old Stuff</h4><small>Pre-1980, surprisingly deep</small>
-      </article>
+      {{ end }}
     </div>
   </div>
 </section>
@@ -303,25 +347,16 @@
     {{ end -}}
   </div>
   &copy; {{ now.Year }} {{ .Site.Params.author.name | default .Site.Title }}
-  <div id="tmdb-credit" class="credit" hidden>
+  {{ if $hasReal }}
+  <div class="credit">
     Artwork from <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>.
     This product uses the TMDB API but is not endorsed or certified by TMDB.
   </div>
+  {{ end }}
 </footer>
 
 <script>
 "use strict";
-
-/* =========================================================================
-   POSTER ARTWORK — paste your TMDB API key here and the placeholder art is
-   replaced with the real posters. Leave it empty and the page falls back to
-   the generated artwork; nothing breaks either way.
-
-   Get a free key: themoviedb.org -> Settings -> API -> API Read Access /
-   API Key (v3 auth). If you already run Seerr, it is using one of these.
-   ========================================================================= */
-const TMDB_KEY  = "{{ .Site.Params.tmdbKey }}";   // set tmdbKey in hugo.toml
-const TMDB_SIZE = "w342";  // w185 | w342 | w500 | original
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
@@ -329,10 +364,10 @@ const lerp  = (a,b,n)=>a+(b-a)*n;
 
 /* ------------------------------------------------------------------------
    PLACEHOLDER POSTER ART
-   Each poster is an SVG built on the fly and set as an <img src> data URI, so
-   swapping in real artwork later is a one-attribute change per image.
-   Colour is derived from a hash of the title, which keeps it stable across
-   reloads while still giving every poster its own look.
+   Real artwork is baked in at build time (see the template above). This fills
+   the gaps: any title TMDB had no poster for, and any real poster that fails
+   to load. The colour is a hash of the title, so a given title always gets
+   the same generated art.
 ------------------------------------------------------------------------ */
 (function posters(){
   const hash = str => { let h = 2166136261;
@@ -370,66 +405,14 @@ const lerp  = (a,b,n)=>a+(b-a)*n;
     return "data:image/svg+xml," + encodeURIComponent(svg);
   }
 
-  document.querySelectorAll(".tile").forEach(tile=>{
-    const art = tile.querySelector(".tile-art");
-    tile.dataset.titles.split("|").forEach(title=>{
-      const img = document.createElement("img");
-      img.src = poster(title.trim());
-      img.dataset.title = title.trim();
-      img.dataset.fallback = img.src;   // reverted to if a real poster 404s
-      img.alt = title.trim() + " poster";
-      img.addEventListener("error", ()=>{ img.src = img.dataset.fallback; });
-      art.appendChild(img);
-    });
+  document.querySelectorAll(".tile-art img").forEach(img=>{
+    const fallback = poster(img.dataset.title || "");
+    if (!img.getAttribute("src")){ img.src = fallback; return; }
+    // a real poster that 404s or gets blocked drops back to generated art
+    img.addEventListener("error", ()=>{
+      img.classList.remove("real"); img.src = fallback;
+    }, {once:true});
   });
-})();
-
-/* ------------------------------------------------------------------------
-   Upgrade the generated placeholders to real TMDB artwork.
-   Every image already has a working src, so this only ever improves the page
-   -- a missing key, a rate limit, a network failure or a bad match all just
-   leave the generated poster in place.
-
-   search/multi covers films and TV in one endpoint, which matters here
-   because the tiles mix both. Results are preloaded before being swapped in
-   so a poster never pops in half-drawn.
------------------------------------------------------------------------- */
-(async function tmdb(){
-  if (!TMDB_KEY) return;
-  const imgs = [...document.querySelectorAll(".tile-art img")];
-  const seen = new Map();   // in-memory only: same title looked up once
-
-  for (const img of imgs){
-    const q = img.dataset.title;
-    try{
-      if (!seen.has(q)){
-        const url = "https://api.themoviedb.org/3/search/multi?include_adult=false"
-                  + "&api_key=" + encodeURIComponent(TMDB_KEY)
-                  + "&query="   + encodeURIComponent(q);
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("TMDB " + res.status);
-        const json = await res.json();
-        const hit  = (json.results || []).find(r => r.poster_path);
-        seen.set(q, hit ? hit.poster_path : null);
-      }
-      const path = seen.get(q);
-      if (!path) continue;
-
-      const src = "https://image.tmdb.org/t/p/" + TMDB_SIZE + path;
-      await new Promise(done=>{
-        const pre = new Image();
-        pre.onload  = ()=>{ img.src = src; img.classList.add("real"); done(); };
-        pre.onerror = done;
-        pre.src = src;
-      });
-    }catch(err){
-      /* generated poster stays; log once so it is debuggable */
-      if (!window.__tmdbWarned){ console.warn("TMDB lookup failed:", err.message); window.__tmdbWarned = 1; }
-    }
-  }
-
-  const credit = document.getElementById("tmdb-credit");
-  if (credit && document.querySelector(".tile-art img.real")) credit.hidden = false;
 })();
 
 /* ------------------------------------------------------------------ [1]

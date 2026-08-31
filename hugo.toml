@@ -12,10 +12,19 @@ title = 'Nash Gibson'
   description = 'Plex server, media requests, and server status updates.'
   mainSections = ['posts']
 
-  # Optional: a TMDB v3 API key turns the placeholder poster art on the home
-  # page into real artwork. Empty = the generated posters stay. The key ends up
-  # visible in the built page, so use a plain read-only v3 key.
+  # TMDB artwork for the home page rails. The posters are fetched at BUILD
+  # time, so the key never reaches the browser — which also means it must NOT
+  # be written here: this repo is public. Leave it empty and pass the key as
+  # an environment variable instead; Hugo maps HUGO_PARAMS_* onto params:
+  #
+  #   local:            HUGO_PARAMS_TMDBKEY=<v3 key> hugo server
+  #   Cloudflare Pages: Settings -> Variables and Secrets ->
+  #                     HUGO_PARAMS_TMDBKEY = <v3 key>
+  #
+  # With no key the tiles use the generated placeholder art and the build
+  # still succeeds.
   tmdbKey = ''
+  tmdbSize = 'w342'   # w185 | w342 | w500 | original
 
 [params.webmanifest]
   theme_color = '#000000'
