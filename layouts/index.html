@@ -1,146 +1,26 @@
 {{/* ===========================================================================
      HOME PAGE  ·  ayynash.net v2
 
-     This page deliberately does NOT use the theme's head/header/footer
-     partials. It ships its own stylesheet, and the theme's SCSS also defines
-     .hero and .tile — loading both would have them fight over the same class
-     names. Every other page on the site still uses the theme layout untouched.
+     The shared half of this design lives in three partials — v2-head,
+     v2-chrome and v2-cards — so /join/ can use the same tokens, surface and
+     card system without a second copy drifting out of sync. What stays here
+     is only what the home page alone does: the hero, the marquees, the two
+     pinned sections, and the one rAF loop that drives them.
 
      Service URLs come from [params.services] in hugo.toml, so a URL change
      there updates this page, /join/, and anything else at the same time.
+
+     EFFECTS INDEX  (each is commented in both CSS + JS with the same number)
+       [1] Line-mask hero reveal        [5] Word-by-word illumination
+       [2] Eased scroll driver (lerp)   [6] Pinned horizontal scroll
+       [3] Scroll-velocity skew         [7] Pinned panel scrub
+       [4] Parallax marquee rows
    =========================================================================== */}}
 {{- $svc := .Site.Params.services -}}
 {{- $desc := .Site.Params.description -}}
 {{- $pageTitle := printf "Welcome to my site — %s" .Site.Title -}}
-<!doctype html>
-<html lang="{{ .Site.LanguageCode | default "en" }}" data-theme="{{ .Site.Params.defaultColor | default "dark" }}">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<title>{{ $pageTitle }}</title>
-<meta name="description" content="{{ $desc }}" />
-<link rel="canonical" href="{{ .Permalink }}" />
-
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="{{ .Site.Params.sitename | default .Site.Title }}" />
-<meta property="og:title" content="{{ $pageTitle }}" />
-<meta property="og:description" content="{{ $desc }}" />
-<meta property="og:url" content="{{ .Permalink }}" />
-<meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="{{ $pageTitle }}" />
-<meta name="twitter:description" content="{{ $desc }}" />
-{{- with .Site.Params.logo.path }}
-<meta property="og:image" content="{{ . | absURL }}" />
-<meta name="twitter:image" content="{{ . | absURL }}" />
-{{- end }}
-
-{{/* Favicons and the manifest come from the theme's asset bundle, exactly as
-     they do on every other page — only the stylesheet is left out. */}}
-<link rel="apple-touch-icon" sizes="180x180" href="{{ (resources.Get "icons/apple-touch-icon.png").RelPermalink }}">
-<link rel="icon" type="image/png" sizes="32x32" href="{{ (resources.Get "icons/favicon-32x32.png").RelPermalink }}">
-<link rel="icon" type="image/png" sizes="16x16" href="{{ (resources.Get "icons/favicon-16x16.png").RelPermalink }}">
-<link rel="icon" type="image/svg+xml" href="{{ (resources.Get "icons/favicon.svg").RelPermalink }}">
-<link rel="shortcut icon" href="{{ (resources.Get "icons/favicon.ico" | resources.Copy "favicon.ico").RelPermalink }}">
-{{- partial "webmanifest.html" . -}}
-<meta name="theme-color" content="#33ff33">
-<meta name="color-scheme" content="dark light">
-
-{{/* JetBrains Mono, same as the rest of the site. */}}
-{{ if templates.Exists "partials/custom-head.html" }}{{ partial "custom-head.html" . }}{{ end }}
+{{ partial "v2-head.html" (dict "page" . "title" $pageTitle "desc" $desc) }}
 <style>
-/* ===========================================================================
-   AYYNASH.NET  ·  v2
-   One file, no dependencies, all vanilla.
-
-   EFFECTS INDEX  (each is commented in both CSS + JS with the same number)
-     [1] Line-mask hero reveal        [6] Pinned horizontal scroll
-     [2] Eased scroll driver (lerp)   [7] Magnetic buttons
-     [3] Scroll-velocity skew         [8] Film grain overlay
-     [4] Parallax marquee rows        [9] Pinned panel scrub
-     [5] Word-by-word illumination
-   =========================================================================== */
-
-:root{
-  /* everything else on the page derives from these two */
-  --accent:#33ff33;
-  --accent-2:#a3e635;
-
-  --bg:#07080b;
-  --bg-2:#0c0e13;
-  --ink:#f4f5f7;
-  --dim:#868997;
-  --line:#1c1f27;
-  --card:#0f1117;
-  /* One stack for the whole page — JetBrains Mono is already loaded site-wide
-     by partials/custom-head.html, so /join/ and /posts/ set in the same face. */
-  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
-  --glow:color-mix(in srgb, var(--accent) 18%, transparent);
-  --faint:color-mix(in srgb, var(--accent) 10%, transparent);
-}
-:root[data-theme="light"]{
-  --bg:#fafaf9; --bg-2:#f1f1ef; --ink:#0f1116; --dim:#5c5f6b;
-  --line:#e3e3e0; --card:#ffffff;
-  /* the darker green ink from _custom.scss — #33ff33 on a near-white page is
-     far too faint for the eyebrows and the small go-links */
-  --accent:#1f7a1f; --accent-2:#4d7c0f;
-}
-
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;background:var(--bg);color:var(--ink);
-  font-family:var(--mono);
-  line-height:1.55;overflow-x:hidden;
-  transition:background .45s ease,color .45s ease;
-}
-a{color:inherit;text-decoration:none}
-.mono{font-family:var(--mono)}
-.wrap{max-width:1100px;margin:0 auto;padding:0 28px}
-
-.eyebrow{
-  font-size:.68rem;text-transform:uppercase;letter-spacing:.26em;color:var(--accent);
-  display:flex;align-items:center;gap:12px;margin-bottom:22px;
-}
-.eyebrow::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,var(--accent),transparent);opacity:.45}
-h2{font-size:clamp(1.4rem,3.5vw,2.5rem);line-height:1.12;letter-spacing:-.012em;margin:0 0 16px;font-weight:700}
-p.lead{color:var(--dim);font-size:1.05rem;max-width:560px;margin:0}
-
-/* --- chrome: progress bar + theme toggle -------------------------------- */
-#bar{position:fixed;top:0;left:0;height:2px;width:100%;transform:scaleX(0);transform-origin:0 50%;
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:120}
-
-#theme{
-  position:fixed;top:20px;right:22px;z-index:120;width:38px;height:38px;border-radius:50%;
-  cursor:pointer;border:1px solid var(--line);background:color-mix(in srgb,var(--ink) 6%,transparent);
-  color:var(--ink);font-size:16px;display:grid;place-items:center;padding:0;
-  backdrop-filter:blur(12px);transition:transform .25s ease,border-color .25s ease;
-}
-#theme:hover{transform:rotate(-20deg) scale(1.08);border-color:var(--accent)}
-
-/* --- CRT scanlines -------------------------------------------------------
-   Sits UNDER the grain (z-index 109 vs 110) so the two textures stack instead
-   of one washing the other out. Deliberately faint: at full strength this
-   shimmers badly on an OLED at low brightness. 3px period rather than 2px
-   because a 2px period aliases into moire on a 2x display. */
-#scan{
-  position:fixed;inset:0;z-index:109;pointer-events:none;opacity:.28;
-  background:repeating-linear-gradient(to bottom,
-    rgba(0,0,0,0) 0 2px, rgba(0,0,0,.55) 2px 3px);
-}
-:root[data-theme="light"] #scan{opacity:.08}
-
-/* --- [8] film grain ------------------------------------------------------ */
-#grain{
-  position:fixed;inset:-120%;z-index:110;pointer-events:none;opacity:.14;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation:grainShift .7s steps(3) infinite;
-}
-:root[data-theme="light"] #grain{opacity:.07}
-@keyframes grainShift{
-  0%{transform:translate(0,0)}33%{transform:translate(-3%,2%)}66%{transform:translate(2%,-3%)}100%{transform:translate(0,0)}
-}
-
 /* =============== [1] HERO — line-mask reveal ============================= */
 .hero{
   height:100svh;min-height:600px;position:relative;overflow:hidden;
@@ -175,8 +55,6 @@ p.lead{color:var(--dim);font-size:1.05rem;max-width:560px;margin:0}
 .big .line:nth-child(2) > span{animation-delay:.42s}
 .big .line:nth-child(3) > span{animation-delay:.54s}
 .big .line:nth-child(3) > span{color:transparent;-webkit-text-stroke:2px var(--accent)}
-@keyframes lineUp{to{transform:none}}
-@keyframes fadeIn{to{opacity:1}}
 
 .tagline{margin:26px 0 0;color:var(--dim);font-size:clamp(.82rem,2.1vw,1rem);letter-spacing:.05em;min-height:1.6em}
 .tagline .caret{display:inline-block;width:.6ch;background:var(--accent);color:transparent;animation:blink 1s step-end infinite}
@@ -206,7 +84,7 @@ p.lead{color:var(--dim);font-size:1.05rem;max-width:560px;margin:0}
 .mq .dot{color:var(--accent);padding:0 .18em}
 
 /* =============== [5] WORD ILLUMINATION =================================== */
-.illum{padding:150px 0 140px}
+.illum{padding-top:150px;padding-bottom:140px}
 .illum p{
   font-size:clamp(1rem,2.9vw,2rem);font-weight:600;line-height:1.45;
   letter-spacing:-.01em;max-width:940px;margin:34px 0 0;
@@ -255,70 +133,33 @@ p.lead{color:var(--dim);font-size:1.05rem;max-width:560px;margin:0}
 .tile h4{margin:0;font-size:clamp(1rem,1.9vw,1.4rem);letter-spacing:-.01em;position:relative;z-index:2}
 .tile small{color:var(--dim);font-size:.85rem;position:relative;z-index:2;margin-top:6px}
 
-/* =============== [7] MAGNETIC BUTTONS =================================== */
-.actions{padding:150px 0 40px}
-.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:52px}
-.act{
-  position:relative;display:block;padding:34px 28px 28px;border-radius:20px;
-  background:var(--card);border:1px solid var(--line);overflow:hidden;
-  opacity:0;transform:translateY(36px);
-  transition:opacity .8s ease,transform .8s cubic-bezier(.19,1,.22,1),border-color .3s ease;
-}
-.act.on{opacity:1;transform:none}
-.act:hover{border-color:var(--accent)}
-.act::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .35s ease;pointer-events:none;
-  background:radial-gradient(340px circle at var(--mx,50%) var(--my,50%),var(--glow),transparent 65%)}
-.act:hover::before{opacity:1}
-/* [7] the magnet moves this inner wrapper so it never fights the reveal transform */
-.act .mag{display:block;position:relative;transition:transform .35s cubic-bezier(.19,1,.22,1)}
-.act .ico{display:block;margin-bottom:18px;color:var(--accent)}
-.act .ico svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.act h4{margin:0 0 8px;font-size:1.05rem;letter-spacing:-.006em}
-.act p{margin:0;color:var(--dim);font-size:.92rem}
-.act .go{margin-top:22px;display:inline-flex;align-items:center;gap:8px;
-  font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
-.act .go em{font-style:normal;transition:transform .3s cubic-bezier(.19,1,.22,1)}
-.act:hover .go em{transform:translateX(7px)}
-
+/* =============== SOCIALS ================================================ */
 /* =============== SOCIALS + FOOTER ======================================= */
-.socials{padding:110px 0 60px}
+.socials{padding-top:110px;padding-bottom:60px}
 .slist{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
 .slink{display:inline-flex;align-items:center;gap:9px;padding:11px 18px;border-radius:999px;
   border:1px solid var(--line);font-size:.88rem;color:var(--dim);
   transition:color .25s ease,border-color .25s ease,transform .25s cubic-bezier(.19,1,.22,1)}
 .slink:hover{color:var(--ink);border-color:var(--accent);transform:translateY(-3px)}
 .slink b{font-weight:600;color:var(--ink)}
-footer{padding:80px 0 110px;border-top:1px solid var(--line);margin-top:70px;
-  color:var(--dim);font-size:.85rem;text-align:center}
-footer .beep{color:var(--accent);letter-spacing:.24em;font-size:.7rem;margin-bottom:14px}
-footer .latest{margin-bottom:18px}
-footer .latest a{color:var(--accent);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase}
-footer .latest a:hover{text-decoration:underline;text-underline-offset:4px}
-footer .latest em{font-style:normal;display:inline-block;transition:transform .3s cubic-bezier(.19,1,.22,1)}
-footer .latest a:hover em{transform:translateX(6px)}
-footer .credit{margin-top:18px;font-size:.72rem;opacity:.6;max-width:420px;margin-inline:auto}
-footer .credit a{color:var(--accent)}
 
-/* =============== reduced motion ========================================= */
+/* =============== sections =============================================== */
+.actions{padding-top:150px;padding-bottom:40px}
+
+/* =============== reduced motion (home effects) ========================== */
 @media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important}
-  .big .line > span,.kicker,.cue,.act,.panel{opacity:1!important;transform:none!important}
+  .big .line > span,.kicker,.cue,.panel{opacity:1!important;transform:none!important}
   .illum .w{opacity:1!important}
-  #grain,#scan{display:none}
   .pin-outer,.hs-outer{height:auto}
   .pin-inner,.hs-inner{position:static;height:auto;display:block;padding:60px 0}
   .panel{position:static;opacity:1;transform:none;padding:44px 28px}
   .hs-track{flex-wrap:wrap;justify-content:center}
-  html{scroll-behavior:auto}
 }
 </style>
 </head>
 <body>
 
-<div id="bar"></div>
-<div id="scan"></div>
-<div id="grain"></div>
-<button id="theme" aria-label="Toggle theme">☀</button>
+{{ partial "v2-chrome.html" . }}
 
 <!-- ============ [1] HERO ============ -->
 <header class="hero">
@@ -647,7 +488,6 @@ buildMarquees();
    [3] `vel` is the gap between them — i.e. how hard you're scrolling — which
        gets fed into a small skew. This is the classic awwwards flourish.
 ------------------------------------------------------------------------ */
-const bar = document.getElementById("bar");
 const heroInner = document.querySelector(".hero-inner");
 const pin = document.getElementById("pin");
 const panels = [...document.querySelectorAll(".panel")];
@@ -667,9 +507,6 @@ function frame(now){
   /* [2] eased driver + [3] velocity */
   eased = lerp(eased, y, 0.12);
   vel   = lerp(vel, y - eased, 0.18);
-
-  const docH = document.documentElement.scrollHeight - vh;
-  bar.style.transform = "scaleX(" + (docH>0 ? y/docH : 0) + ")";
 
   if (!reduced){
     /* hero lifts + dissolves, driven by the EASED value so it trails you */
@@ -721,43 +558,6 @@ function frame(now){
 }
 requestAnimationFrame(frame);
 
-/* ------------------------------------------------------------------ [7]
-   Reveal on entry + magnetic hover. The magnet moves an inner wrapper so it
-   never collides with the reveal transform on the card itself.
------------------------------------------------------------------------- */
-(function buttons(){
-  const io = new IntersectionObserver(es=>es.forEach(e=>{
-    if (e.isIntersecting){ e.target.classList.add("on"); io.unobserve(e.target); }
-  }),{threshold:.2});
-
-  document.querySelectorAll(".act").forEach((el,i)=>{
-    el.style.transitionDelay = (i*0.11)+"s";
-    io.observe(el);
-    const mag = el.querySelector(".mag");
-    el.addEventListener("pointermove", ev=>{
-      const r = el.getBoundingClientRect();
-      el.style.setProperty("--mx",(ev.clientX-r.left)+"px");
-      el.style.setProperty("--my",(ev.clientY-r.top)+"px");
-      if (reduced) return;
-      const dx = ev.clientX - (r.left + r.width/2);
-      const dy = ev.clientY - (r.top + r.height/2);
-      mag.style.transform = "translate(" + dx*0.09 + "px," + dy*0.12 + "px)";
-    });
-    el.addEventListener("pointerleave", ()=> mag.style.transform = "");
-  });
-})();
-
-/* --- theme toggle -------------------------------------------------------- */
-(function theme(){
-  const root = document.documentElement, btn = document.getElementById("theme");
-  if (matchMedia("(prefers-color-scheme: light)").matches) root.dataset.theme = "light";
-  const paint = ()=> btn.textContent = root.dataset.theme === "dark" ? "☀" : "☾";
-  paint();
-  btn.addEventListener("click", ()=>{
-    root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark"; paint();
-  });
-})();
-
 /* --- discord: the link opens the server invite, right-click-free shortcut is
        a long-press/secondary click that copies the handle instead ----------- */
 document.getElementById("discord")?.addEventListener("contextmenu", e=>{
@@ -775,5 +575,7 @@ addEventListener("resize", ()=>{
   lastW = innerWidth; clearTimeout(rz); rz = setTimeout(buildMarquees, 250);
 });
 </script>
+
+{{ partial "v2-cards.html" . }}
 </body>
 </html>

@@ -1,0 +1,54 @@
+{{/* ===========================================================================
+     v2-head.html — the shared <head> for every page built on the v2 design.
+
+     Emits everything from <!doctype html> down to the shared stylesheet and
+     LEAVES <head> OPEN, so the calling page can append its own page-specific
+     <style> and close </head> itself.
+
+     Call it with a dict:
+       {{ partial "v2-head.html" (dict "page" . "title" $t "desc" $d) }}
+
+     These pages skip the theme's head.html on purpose: they ship their own CSS
+     and the theme SCSS defines .hero and .tile too, so loading both would have
+     them fight over the same class names.
+   =========================================================================== */}}
+{{- $p := .page -}}
+{{- $title := .title -}}
+{{- $desc := .desc -}}
+<!doctype html>
+<html lang="{{ $p.Site.LanguageCode | default "en" }}" data-theme="{{ $p.Site.Params.defaultColor | default "dark" }}">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>{{ $title }}</title>
+<meta name="description" content="{{ $desc }}" />
+<link rel="canonical" href="{{ $p.Permalink }}" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="{{ $p.Site.Params.sitename | default $p.Site.Title }}" />
+<meta property="og:title" content="{{ $title }}" />
+<meta property="og:description" content="{{ $desc }}" />
+<meta property="og:url" content="{{ $p.Permalink }}" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="{{ $title }}" />
+<meta name="twitter:description" content="{{ $desc }}" />
+{{- with $p.Site.Params.logo.path }}
+<meta property="og:image" content="{{ . | absURL }}" />
+<meta name="twitter:image" content="{{ . | absURL }}" />
+{{- end }}
+
+{{/* Favicons and the manifest come from the theme's asset bundle, exactly as
+     they do on every other page — only the stylesheet is left out. */}}
+<link rel="apple-touch-icon" sizes="180x180" href="{{ (resources.Get "icons/apple-touch-icon.png").RelPermalink }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ (resources.Get "icons/favicon-32x32.png").RelPermalink }}">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ (resources.Get "icons/favicon-16x16.png").RelPermalink }}">
+<link rel="icon" type="image/svg+xml" href="{{ (resources.Get "icons/favicon.svg").RelPermalink }}">
+<link rel="shortcut icon" href="{{ (resources.Get "icons/favicon.ico" | resources.Copy "favicon.ico").RelPermalink }}">
+{{- partial "webmanifest.html" $p -}}
+<meta name="theme-color" content="#33ff33">
+<meta name="color-scheme" content="dark light">
+
+{{/* JetBrains Mono, same as the rest of the site. */}}
+{{ if templates.Exists "partials/custom-head.html" }}{{ partial "custom-head.html" $p }}{{ end }}
+{{ partial "v2-style.html" $p }}

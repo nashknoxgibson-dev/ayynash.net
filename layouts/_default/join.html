@@ -1,22 +1,139 @@
-{{ define "main" }}
+{{/* ===========================================================================
+     JOIN PAGE  ·  ayynash.net v2
+
+     Shares its tokens, surface, card system and footer with the home page
+     through the v2-* partials. What is deliberately NOT shared is the motion:
+     /join/ is a task page. Someone arrives here holding a code, often on a
+     phone, wanting one input box — so there is no full-viewport hero, no
+     marquee and no pinned scrolling. The invite box is reachable without
+     scrolling at every size, and the only entrance animation is a short word
+     reveal on the headline plus the card reveals further down.
+
+     Everything on the page is config-driven: copy from content/join.md,
+     URLs from [params.services] in hugo.toml.
+   =========================================================================== */}}
 {{- $svc := .Site.Params.services -}}
 {{- $p := .Params -}}
+{{- $desc := $p.description | default .Site.Params.description -}}
+{{- $pageTitle := printf "%s — %s" .Title .Site.Title -}}
+{{ partial "v2-head.html" (dict "page" . "title" $pageTitle "desc" $desc) }}
+<style>
+/* =============== top bar ================================================ */
+/* The v2 pages carry no site header, so this is the only way back. */
+.jtop{position:fixed;top:0;left:0;right:0;z-index:115;padding:19px 22px;pointer-events:none;
+  background:linear-gradient(var(--bg),color-mix(in srgb,var(--bg) 55%,transparent) 62%,transparent)}
+.jtop a{pointer-events:auto;display:inline-flex;align-items:center;gap:9px;
+  font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
+  transition:color .25s ease}
+.jtop a:hover{color:var(--accent)}
+.jtop em{font-style:normal;transition:transform .3s cubic-bezier(.19,1,.22,1)}
+.jtop a:hover em{transform:translateX(-5px)}
 
-<div class="wrapper wrapper-wide">
+/* =============== hero =================================================== */
+/* Short on purpose — see the note at the top of the file. */
+.jhero{padding-top:112px}
+.jbig{margin:0;font-weight:800;letter-spacing:-.02em;line-height:1.08;
+  font-size:clamp(1.75rem,5.4vw,3.9rem)}
+/* Each WORD gets its own overflow:hidden box rather than each line, so the
+   mask still works wherever the headline happens to wrap. */
+.jbig .w{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.06em}
+.jbig .w > span{display:inline-block;transform:translateY(115%);
+  animation:lineUp .9s cubic-bezier(.19,1,.22,1) forwards}
+.jhero .lead{margin-top:20px;font-size:1rem}
 
-  {{/* ---------- Hero ---------- */}}
-  <header class="join-hero">
-    {{ with $p.eyebrow }}<span class="join-eyebrow">{{ . }}</span>{{ end }}
-    <h1>{{ $p.headline | default .Title }}</h1>
-    {{ with $p.subhead }}<p>{{ . }}</p>{{ end }}
-  </header>
+/* =============== invite box ============================================= */
+.invite{position:relative;overflow:hidden;margin:42px 0 0;max-width:640px;
+  border:1px solid var(--line);border-radius:22px;background:var(--card);
+  padding:32px 28px 26px;transition:border-color .3s ease}
+.invite::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(460px circle at 50% -18%,var(--glow),transparent 68%)}
+.invite:focus-within{border-color:var(--accent)}
+.invite h2{font-size:clamp(1.05rem,2.4vw,1.4rem);margin:0 0 8px;position:relative;z-index:2}
+.invite > p{color:var(--dim);font-size:.9rem;margin:0 0 22px;max-width:48ch;position:relative;z-index:2}
 
-  <main aria-label="Content">
+.invite-form{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:2}
+.invite-form input{flex:1 1 220px;min-width:0;color:var(--ink);
+  background:color-mix(in srgb,var(--bg) 70%,transparent);
+  border:1px solid var(--line);border-radius:12px;padding:16px 18px;
+  font-family:var(--mono);font-size:1.02rem;letter-spacing:.2em;text-transform:uppercase;
+  transition:border-color .25s ease,box-shadow .25s ease}
+.invite-form input::placeholder{color:var(--dim);opacity:.45}
+.invite-form input:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}
+.invite-form input[aria-invalid="true"]{border-color:#ff6b6b}
+/* Reverse video, the way a terminal marks a selected line. */
+.invite-form button{flex:0 0 auto;cursor:pointer;border:1px solid var(--accent);border-radius:12px;
+  padding:16px 24px;background:var(--accent);color:var(--bg);
+  font-family:var(--mono);font-weight:700;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;
+  transition:transform .25s cubic-bezier(.19,1,.22,1),filter .25s ease}
+.invite-form button:hover{transform:translateY(-2px);filter:brightness(1.14)}
+.invite-form button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.invite-error{color:#ff8a8a;font-size:.86rem;margin:14px 0 0;position:relative;z-index:2}
+.invite-note{display:block;margin-top:18px;color:var(--dim);font-size:.8rem;position:relative;z-index:2}
+.invite-note a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.invite-note code{font-family:var(--mono);font-size:.92em}
 
-    {{/* ---------- The invite CTA ----------
-         Wizarr has no "enter your code" screen — its only public route is
-         /j/<CODE>. So we collect the code here and send them straight there. */}}
-    <section class="invite-box">
+/* =============== sections =============================================== */
+.jsec{padding-top:88px}
+
+/* steps — numbered in the same outlined style as the home page's panels */
+.steps{list-style:none;counter-reset:s;padding:0;margin:34px 0 0;display:grid;gap:14px}
+.steps li{counter-increment:s;position:relative;padding:26px 28px 24px 86px;
+  border:1px solid var(--line);border-radius:18px;background:var(--card);
+  transition:border-color .3s ease}
+.steps li:hover{border-color:var(--accent)}
+.steps .step-num{position:absolute;left:26px;top:23px;line-height:1;
+  font-size:1.75rem;font-weight:800;letter-spacing:-.03em;
+  color:transparent;-webkit-text-stroke:1.2px var(--accent);opacity:.6}
+.steps .step-num::before{content:counter(s,decimal-leading-zero)}
+.steps li h3{margin:0 0 6px;font-size:1rem;letter-spacing:-.006em}
+.steps li p{margin:0;color:var(--dim);font-size:.9rem}
+
+/* faq */
+.faq details{border-bottom:1px solid var(--line)}
+.faq details:first-of-type{border-top:1px solid var(--line);margin-top:34px}
+.faq summary{cursor:pointer;list-style:none;position:relative;padding:20px 46px 20px 0;
+  font-size:.96rem;transition:color .25s ease}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:var(--accent)}
+.faq summary::after{content:"+";position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  color:var(--accent);font-size:1.15rem;line-height:1}
+.faq details[open] summary{color:var(--accent)}
+.faq details[open] summary::after{content:"\2212"}
+.faq-body{padding:0 46px 22px 0;color:var(--dim);font-size:.92rem}
+.faq-body p{margin:0 0 12px}
+.faq-body p:last-child{margin-bottom:0}
+.faq-body a{color:var(--accent)}
+
+@media (prefers-reduced-motion:reduce){
+  .jbig .w > span{transform:none!important}
+}
+</style>
+</head>
+<body>
+
+{{ partial "v2-chrome.html" . }}
+
+<div class="jtop"><a href="{{ "/" | relURL }}"><em>&larr;</em> {{ .Site.Title }}</a></div>
+
+<header class="jhero wrap">
+  {{ with $p.eyebrow }}<div class="eyebrow">{{ . }}</div>{{ end }}
+  <h1 class="jbig">
+    {{- range $i, $w := split ($p.headline | default $.Title) " " -}}
+    <span class="w"><span style="{{ printf "animation-delay:%.2fs" (add 0.15 (mul $i 0.06)) | safeCSS }}">{{ $w }}</span></span>
+    {{- " " -}}
+    {{- end -}}
+  </h1>
+  {{ with $p.subhead }}<p class="lead">{{ . }}</p>{{ end }}
+</header>
+
+<main aria-label="Content">
+
+  {{/* ---------- The invite CTA ----------
+       Wizarr has no "enter your code" screen — its only public route is
+       /j/<CODE>. So we collect the code here and send them straight there. */}}
+  <section class="wrap">
+    <div class="invite">
       <h2>Ready? Enter your invite code</h2>
       <p>Type the code I sent you. You can paste the whole link too &mdash; we'll pull the code out of it.</p>
 
@@ -33,13 +150,13 @@
           maxlength="120"
           placeholder="ABC123XYZ"
           aria-describedby="invite-error" />
-        <button class="btn btn-primary btn-lg" type="submit">Continue &rarr;</button>
+        <button type="submit">Continue &rarr;</button>
       </form>
 
       <p class="invite-error" id="invite-error" role="alert" hidden></p>
 
       <noscript>
-        <p class="invite-note" style="margin-top:1rem">
+        <p class="invite-note">
           This box needs JavaScript. Without it, open the invite link I sent you directly &mdash;
           it looks like <code>{{ $svc.wizarr }}j/YOURCODE</code>.
         </p>
@@ -48,131 +165,136 @@
       <span class="invite-note">
         Don't have a code yet? <a href="{{ $svc.contact }}" target="_blank" rel="noopener">Message me</a> and I'll send one.
       </span>
-    </section>
+    </div>
+  </section>
 
-    <script>
-      (function () {
-        {{/* Hugo emits this as a quoted, JS-escaped string literal on its own —
-             piping through jsonify would double-encode the quotes. */}}
-        var BASE = {{ $svc.wizarr }};
-        var form = document.getElementById("invite-form");
-        var input = document.getElementById("invite-code");
-        var error = document.getElementById("invite-error");
-        if (!form || !input || !error) return;
+  <script>
+    (function () {
+      {{/* Hugo emits this as a quoted, JS-escaped string literal on its own —
+           piping through jsonify would double-encode the quotes. */}}
+      var BASE = {{ $svc.wizarr }};
+      var form = document.getElementById("invite-form");
+      var input = document.getElementById("invite-code");
+      var error = document.getElementById("invite-error");
+      if (!form || !input || !error) return;
 
-        // Wizarr codes are 6-10 chars of A-Z and 0-9 (see app/services/invites.py).
-        var VALID = /^[A-Z0-9]{6,10}$/;
+      // Wizarr codes are 6-10 chars of A-Z and 0-9 (see app/services/invites.py).
+      var VALID = /^[A-Z0-9]{6,10}$/;
 
-        function clean(raw) {
-          var v = (raw || "").trim();
-          // Tolerate a pasted full invite link: grab whatever follows /j/.
-          var m = v.match(/\/j\/([^/?#\s]+)/i);
-          if (m) v = m[1];
-          // Tolerate stray spaces, dashes or underscores people add.
-          return v.replace(/[\s\-_]/g, "").toUpperCase();
+      function clean(raw) {
+        var v = (raw || "").trim();
+        // Tolerate a pasted full invite link: grab whatever follows /j/.
+        var m = v.match(/\/j\/([^/?#\s]+)/i);
+        if (m) v = m[1];
+        // Tolerate stray spaces, dashes or underscores people add.
+        return v.replace(/[\s\-_]/g, "").toUpperCase();
+      }
+
+      function fail(msg) {
+        error.textContent = msg;
+        error.hidden = false;
+        input.setAttribute("aria-invalid", "true");
+        input.focus();
+      }
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var code = clean(input.value);
+
+        if (!code) return fail("Enter the invite code I sent you.");
+        if (!VALID.test(code)) {
+          return fail(
+            "That doesn't look like a valid code. It should be 6-10 letters and numbers."
+          );
         }
 
-        function fail(msg) {
-          error.textContent = msg;
-          error.hidden = false;
-          input.setAttribute("aria-invalid", "true");
-          input.focus();
-        }
+        error.hidden = true;
+        input.removeAttribute("aria-invalid");
+        input.value = code;
+        window.location.href = BASE.replace(/\/+$/, "") + "/j/" + encodeURIComponent(code);
+      });
 
-        form.addEventListener("submit", function (e) {
-          e.preventDefault();
-          var code = clean(input.value);
+      // Clear the error as soon as they start fixing it.
+      input.addEventListener("input", function () {
+        error.hidden = true;
+        input.removeAttribute("aria-invalid");
+      });
+    })();
+  </script>
 
-          if (!code) return fail("Enter the invite code I sent you.");
-          if (!VALID.test(code)) {
-            return fail(
-              "That doesn't look like a valid code. It should be 6-10 letters and numbers."
-            );
-          }
+  {{/* ---------- What is Plex ---------- */}}
+  {{ with $p.whatIsPlex }}
+  <section class="jsec wrap">
+    <div class="eyebrow">{{ .title }}</div>
+    <div class="prose">{{ .body | markdownify }}</div>
+  </section>
+  {{ end }}
 
-          error.hidden = true;
-          input.removeAttribute("aria-invalid");
-          input.value = code;
-          window.location.href = BASE.replace(/\/+$/, "") + "/j/" + encodeURIComponent(code);
-        });
-
-        // Clear the error as soon as they start fixing it.
-        input.addEventListener("input", function () {
-          error.hidden = true;
-          input.removeAttribute("aria-invalid");
-        });
-      })();
-    </script>
-
-    {{/* ---------- What is Plex ---------- */}}
-    {{ with $p.whatIsPlex }}
-    <section class="prose">
-      <h2 class="section-heading">{{ .title }}</h2>
-      {{ .body | markdownify }}
-    </section>
-    {{ end }}
-
-    {{/* ---------- Steps ---------- */}}
-    {{ with $p.steps }}
-    <section>
-      <h2 class="section-label">How it works</h2>
-      <ol class="steps">
-        {{ range . }}
-        <li>
-          <span class="step-num" aria-hidden="true"></span>
-          <h3>{{ .title }}</h3>
-          <p>{{ .body }}</p>
-        </li>
-        {{ end }}
-      </ol>
-    </section>
-    {{ end }}
-
-    {{/* ---------- Once you're in ---------- */}}
-    <section>
-      <h2 class="section-label">Once you're in</h2>
-      <div class="card-grid">
-
-        <a class="tile" href="{{ $svc.seerr }}" target="_blank" rel="noopener">
-          {{ partial "icon.html" "search" }}
-          <h3 class="tile-title">Request media <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
-          <p class="tile-desc">Can't find something? Search for it here and it gets added to the library automatically.</p>
-        </a>
-
-        <a class="tile" href="{{ $svc.plexWatch }}" target="_blank" rel="noopener">
-          {{ partial "icon.html" "play" }}
-          <h3 class="tile-title">Open Plex <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
-          <p class="tile-desc">Watch straight from your browser — no install needed.</p>
-        </a>
-
-        <a class="tile" href="{{ $svc.plexApps }}" target="_blank" rel="noopener">
-          {{ partial "icon.html" "download" }}
-          <h3 class="tile-title">Get the app <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
-          <p class="tile-desc">TV, phone, tablet, console. Grab Plex for whatever you actually watch on.</p>
-        </a>
-
-        <a class="tile" href="{{ $svc.contact }}" target="_blank" rel="noopener">
-          {{ partial "icon.html" "help" }}
-          <h3 class="tile-title">Need help <span class="tile-arrow" aria-hidden="true">&rarr;</span></h3>
-          <p class="tile-desc">Stuck on any of this, or something won't play? Ping me.</p>
-        </a>
-
-      </div>
-    </section>
-
-    {{/* ---------- FAQ ---------- */}}
-    {{ with $p.faqs }}
-    <section class="faq">
-      <h2 class="section-label">Questions</h2>
+  {{/* ---------- Steps ---------- */}}
+  {{ with $p.steps }}
+  <section class="jsec wrap">
+    <div class="eyebrow">How it works</div>
+    <ol class="steps">
       {{ range . }}
-      <details>
-        <summary>{{ .q }}</summary>
-        <div class="faq-body">{{ .a | markdownify }}</div>
-      </details>
+      <li>
+        <span class="step-num" aria-hidden="true"></span>
+        <h3>{{ .title }}</h3>
+        <p>{{ .body }}</p>
+      </li>
       {{ end }}
-    </section>
-    {{ end }}
+    </ol>
+  </section>
+  {{ end }}
 
-  </main>
-</div>
-{{ end }}
+  {{/* ---------- Once you're in ---------- */}}
+  <section class="jsec wrap">
+    <div class="eyebrow">Once you're in</div>
+    <div class="grid">
+
+      <a class="act" href="{{ $svc.seerr }}" target="_blank" rel="noopener"><span class="mag">
+        <span class="ico">{{ partial "icon.html" "search" }}</span>
+        <h4>Request media</h4><p>Can't find something? Search for it here and it gets added to the library automatically.</p>
+        <span class="go">Request <em>&rarr;</em></span></span></a>
+
+      <a class="act" href="{{ $svc.plexWatch }}" target="_blank" rel="noopener"><span class="mag">
+        <span class="ico">{{ partial "icon.html" "play" }}</span>
+        <h4>Open Plex</h4><p>Watch straight from your browser &mdash; no install needed.</p>
+        <span class="go">Watch <em>&rarr;</em></span></span></a>
+
+      <a class="act" href="{{ $svc.plexApps }}" target="_blank" rel="noopener"><span class="mag">
+        <span class="ico">{{ partial "icon.html" "download" }}</span>
+        <h4>Get the app</h4><p>TV, phone, tablet, console. Grab Plex for whatever you actually watch on.</p>
+        <span class="go">Download <em>&rarr;</em></span></span></a>
+
+      <a class="act" href="{{ $svc.contact }}" target="_blank" rel="noopener"><span class="mag">
+        <span class="ico">{{ partial "icon.html" "help" }}</span>
+        <h4>Need help</h4><p>Stuck on any of this, or something won't play? Ping me.</p>
+        <span class="go">Ask <em>&rarr;</em></span></span></a>
+
+    </div>
+  </section>
+
+  {{/* ---------- FAQ ---------- */}}
+  {{ with $p.faqs }}
+  <section class="jsec wrap faq">
+    <div class="eyebrow">Questions</div>
+    {{ range . }}
+    <details>
+      <summary>{{ .q }}</summary>
+      <div class="faq-body">{{ .a | markdownify }}</div>
+    </details>
+    {{ end }}
+  </section>
+  {{ end }}
+
+</main>
+
+<footer>
+  <div class="beep mono">BEEP BOOP</div>
+  <div class="latest"><a href="{{ "/" | relURL }}"><em>&larr;</em> Back to {{ .Site.Title }}</a></div>
+  &copy; {{ now.Year }} {{ .Site.Params.author.name | default .Site.Title }}
+</footer>
+
+{{ partial "v2-cards.html" . }}
+</body>
+</html>

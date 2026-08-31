@@ -1,0 +1,44 @@
+{{/* ===========================================================================
+     v2-chrome.html — the fixed furniture every v2 page carries: scroll
+     progress bar, CRT scanlines, film grain, and the light/dark toggle.
+
+     Drop it immediately after <body>. It owns #bar, so no page should write
+     to that element itself.
+   =========================================================================== */}}
+<div id="bar"></div>
+<div id="scan"></div>
+<div id="grain"></div>
+<button id="theme" aria-label="Toggle theme">&#9728;</button>
+
+<script>
+(function chrome(){
+  "use strict";
+  var root = document.documentElement;
+  var bar  = document.getElementById("bar");
+  var btn  = document.getElementById("theme");
+
+  /* --- scroll progress ---------------------------------------------------
+     rAF-throttled: scroll fires far more often than the screen repaints, and
+     writing a transform per event is how you get jank on a trackpad. */
+  var ticking = false;
+  function draw(){
+    var h = document.documentElement.scrollHeight - innerHeight;
+    bar.style.transform = "scaleX(" + (h > 0 ? scrollY / h : 0) + ")";
+    ticking = false;
+  }
+  addEventListener("scroll", function(){
+    if (!ticking){ ticking = true; requestAnimationFrame(draw); }
+  }, {passive:true});
+  addEventListener("resize", draw);
+  draw();
+
+  /* --- theme toggle ------------------------------------------------------ */
+  if (matchMedia("(prefers-color-scheme: light)").matches) root.dataset.theme = "light";
+  var paint = function(){ btn.textContent = root.dataset.theme === "dark" ? "\u2600" : "\u263E"; };
+  paint();
+  btn.addEventListener("click", function(){
+    root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+    paint();
+  });
+})();
+</script>
